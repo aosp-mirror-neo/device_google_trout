@@ -24,7 +24,6 @@
 
 #include "VehicleServer.grpc.pb.h"
 #include "VehicleServer.pb.h"
-#include "vhal_v2_0/DefaultConfig.h"
 #include "vhal_v2_0/ProtoMessageConverter.h"
 
 namespace android {
@@ -42,7 +41,7 @@ static std::shared_ptr<::grpc::ChannelCredentials> getChannelCredentials() {
 
 class GrpcVehicleClientImpl : public VehicleHalClient {
   public:
-    explicit GrpcVehicleClientImpl(const std::string& addr)
+    GrpcVehicleClientImpl(const std::string& addr)
         : mServiceAddr(addr),
           mGrpcChannel(::grpc::CreateChannel(mServiceAddr, getChannelCredentials())),
           mGrpcStub(vhal_proto::VehicleServer::NewStub(mGrpcChannel)) {
@@ -52,7 +51,6 @@ class GrpcVehicleClientImpl : public VehicleHalClient {
     ~GrpcVehicleClientImpl() {
         mShuttingDownFlag.store(true);
         mShutdownCV.notify_all();
-
         if (mPollingThread.joinable()) {
             mPollingThread.join();
         }
@@ -135,7 +133,6 @@ void GrpcVehicleClientImpl::StartValuePollingThread() {
 
             auto value_stream =
                     mGrpcStub->StartPropertyValuesStream(&context, ::google::protobuf::Empty());
-            LOG(INFO) << __func__ << ": GRPC Value Streaming Started";
             vhal_proto::WrappedVehiclePropValue wrappedProtoValue;
             while (!mShuttingDownFlag.load() && value_stream->Read(&wrappedProtoValue)) {
                 VehiclePropValue value;

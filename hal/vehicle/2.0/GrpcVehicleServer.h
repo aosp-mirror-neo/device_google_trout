@@ -17,7 +17,6 @@
 #ifndef android_hardware_automotive_vehicle_V2_0_impl_virtialization_GrpcVehicleServer_H_
 #define android_hardware_automotive_vehicle_V2_0_impl_virtialization_GrpcVehicleServer_H_
 
-#include "Utils.h"
 #include "vhal_v2_0/VehicleHalServer.h"
 
 namespace android {
@@ -37,7 +36,7 @@ class GrpcVehicleServer : public VehicleHalServer {
 
 using GrpcVehicleServerPtr = std::unique_ptr<GrpcVehicleServer>;
 
-GrpcVehicleServerPtr makeGrpcVehicleServer(const VirtualizedVhalServerInfo& serverInfo);
+GrpcVehicleServerPtr makeGrpcVehicleServer(const std::string& addr);
 
 }  // namespace impl
 
