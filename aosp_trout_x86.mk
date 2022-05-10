@@ -14,7 +14,10 @@
 # limitations under the License.
 #
 
-$(call inherit-product, device/google/cuttlefish/vsoc_x86/auto/device.mk)
+$(call inherit-product, device/google/cuttlefish/vsoc_x86/auto/aosp_cf.mk)
+
+# Audio HAL
+TARGET_USES_CUTTLEFISH_AUDIO ?= true
 
 # Audio Control HAL
 # TODO (chenhaosjtuacm, egranata): move them to kernel command line
@@ -28,10 +31,9 @@ DEVICE_MANIFEST_FILE += device/google/trout/manifest_x86.xml
 DEVICE_MATRIX_FILE += device/google/trout/compatibility_matrix.xml
 DEVICE_FRAMEWORK_COMPATIBILITY_MATRIX_FILE := device/google/trout/framework_compatibility_matrix.xml
 
-# TODO(b/162901005): Include computepipe once this project points to main.
-# PRODUCT_COPY_FILES += \
-#    packages/services/Car/cpp/computepipe/products/init.computepipe.rc:$(TARGET_COPY_OUT_SYSTEM)/etc/init/computepipe.rc
+PRODUCT_COPY_FILES += \
+    packages/services/Car/cpp/computepipe/products/init.computepipe.rc:$(TARGET_COPY_OUT_SYSTEM)/etc/init/computepipe.rc
 
 PRODUCT_NAME := aosp_trout_x86
-PRODUCT_DEVICE := vsoc_x86
+PRODUCT_DEVICE := trout_x86
 PRODUCT_MODEL := x86 trout
