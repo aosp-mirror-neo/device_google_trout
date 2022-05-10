@@ -18,19 +18,12 @@
 #include <android/binder_process.h>
 #include <hidl/HidlTransportSupport.h>
 
-#include <utils/Errors.h>
-#include <utils/Looper.h>
-#include <utils/StrongPointer.h>
-
-#include <vhal_v2_0/EmulatedVehicleConnector.h>
-#include <vhal_v2_0/EmulatedVehicleHal.h>
+#include <vhal_v2_0/DefaultVehicleHal.h>
 #include <vhal_v2_0/VehicleHalManager.h>
 
 #include "GrpcVehicleClient.h"
 #include "Utils.h"
-#include "WatchdogClient.h"
 
-using android::Looper;
 using android::OK;
 using android::status_t;
 using android::hardware::configureRpcThreadpool;
@@ -47,8 +40,7 @@ int main(int argc, char* argv[]) {
 
     auto store = std::make_unique<VehiclePropertyStore>();
     auto connector = vhal_impl::makeGrpcVehicleClient(serverInfo->getServerUri());
-    auto hal = std::make_unique<vhal_impl::EmulatedVehicleHal>(store.get(), connector.get());
-    auto emulator = std::make_unique<vhal_impl::VehicleEmulator>(hal.get());
+    auto hal = std::make_unique<vhal_impl::DefaultVehicleHal>(store.get(), connector.get());
     auto service = std::make_unique<VehicleHalManager>(hal.get());
 
     configureRpcThreadpool(4, true /* callerWillJoin */);
@@ -62,21 +54,7 @@ int main(int argc, char* argv[]) {
     }
 
     LOG(INFO) << "Ready";
-
-    // Setup a binder thread pool to be a car watchdog client.
-    ABinderProcess_setThreadPoolMaxThreadCount(1);
-    ABinderProcess_startThreadPool();
-    android::sp<Looper> looper(Looper::prepare(0 /* opts */));
-    auto watchdogClient =
-            ndk::SharedRefBase::make<vhal_impl::WatchdogClient>(looper, service.get());
-    if (!watchdogClient->initialize()) {
-        ALOGE("Failed to initialize car watchdog client");
-        return 1;
-    }
-
-    while (true) {
-        looper->pollAll(-1 /* timeoutMillis */);
-    }
+    joinRpcThreadpool();
 
     // We don't ever actually expect to return, so return an error if we do get here
     return 1;
