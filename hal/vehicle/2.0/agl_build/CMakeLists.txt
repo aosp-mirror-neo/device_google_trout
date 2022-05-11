@@ -1,4 +1,8 @@
-set(_trout_VHAL_CXX_FLAGS -Wall -Werror -std=c++17)
+set(_trout_VHAL_CXX_FLAGS
+    -std=c++17
+    -Wall -Werror
+    -Wno-reorder-init-list
+)
 
 include(${trout_SRC_ROOT}/cmake/fmtlib.cmake)
 include(${trout_SRC_ROOT}/cmake/android.cmake)
@@ -25,7 +29,7 @@ trout_generate_grpc_cpp_from_proto(
 
 # ========== Protobuf generated code ==================
 
-add_library(vehicle_hal_protobuf_gen
+add_library(vehicle_hal_protobuf_gen STATIC
     ${trout_GENS_DIR}/VehicleHalProto.pb.cc
     ${trout_GENS_DIR}/VehicleHalProto.grpc.pb.cc
     ${trout_GENS_DIR}/VehicleServer.pb.cc
@@ -50,8 +54,8 @@ add_executable(vehicle_hal_grpc_server
     ${trout_NATIVE_VHAL_ROOT_DIR}/common/src/Obd2SensorStore.cpp
     ${trout_NATIVE_VHAL_ROOT_DIR}/common/src/VehicleObjectPool.cpp
     ${trout_NATIVE_VHAL_ROOT_DIR}/common/src/VehicleUtils.cpp
+    ${trout_NATIVE_VHAL_ROOT_DIR}/common/src/VehiclePropertyStore.cpp
     ${trout_NATIVE_VHAL_ROOT_DIR}/impl/vhal_v2_0/VehicleHalServer.cpp
-    ${trout_NATIVE_VHAL_ROOT_DIR}/impl/vhal_v2_0/EmulatedUserHal.cpp
     ${trout_NATIVE_VHAL_ROOT_DIR}/impl/vhal_v2_0/GeneratorHub.cpp
     ${trout_NATIVE_VHAL_ROOT_DIR}/impl/vhal_v2_0/JsonFakeValueGenerator.cpp
     ${trout_NATIVE_VHAL_ROOT_DIR}/impl/vhal_v2_0/LinearFakeValueGenerator.cpp
