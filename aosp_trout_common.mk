@@ -17,15 +17,9 @@
 $(call add_soong_config_namespace,audio_extn_config)
 $(call add_soong_config_var_value,audio_extn_config,isHFPEnabled,$(AUDIO_FEATURE_HFP_ENABLED))
 
-ifeq ($(TARGET_USES_CUTTLEFISH_AUDIO),true)
-# Cuttlefish Audio HAL with custom configuration
-LOCAL_AUDIO_PRODUCT_COPY_FILES ?= \
-    device/google/cuttlefish/shared/config/audio_policy.conf:$(TARGET_COPY_OUT_VENDOR)/etc/audio_policy.conf \
-    frameworks/av/services/audiopolicy/config/audio_policy_configuration_generic.xml:$(TARGET_COPY_OUT_VENDOR)/etc/audio_policy_configuration.xml \
-    device/google/trout/product_files/vendor/etc/primary_audio_policy_configuration.cf.xml:$(TARGET_COPY_OUT_VENDOR)/etc/primary_audio_policy_configuration.xml
+PRODUCT_PACKAGE_OVERLAYS += device/google/trout/product_files/overlay
 
-LOCAL_AUDIO_PROPERTIES ?=
-else
+ifeq ($(TARGET_USES_CUTTLEFISH_AUDIO),false)
 # Car Emulator Audio HAL
 LOCAL_AUDIO_PRODUCT_PACKAGE ?= \
     audio.primary.caremu \
@@ -42,12 +36,14 @@ LOCAL_AUDIO_PROPERTIES ?= \
     ro.vendor.caremu.audiohal.out_period_ms=40 \
     ro.vendor.caremu.audiohal.in_period_ms=40 \
 
-LOCAL_AUDIO_PRODUCT_COPY_FILES ?= \
-    device/generic/car/emulator/audio/audio_policy_configuration.xml:$(TARGET_COPY_OUT_VENDOR)/etc/audio_policy_configuration.xml \
+ifndef LOCAL_AUDIO_PRODUCT_COPY_FILES
+LOCAL_AUDIO_PRODUCT_COPY_FILES := \
+    device/google/trout/product_files/vendor/etc/audio_policy_configuration.emulator.xml:$(TARGET_COPY_OUT_VENDOR)/etc/audio_policy_configuration.xml \
     device/generic/car/emulator/audio/car_audio_configuration.xml:$(TARGET_COPY_OUT_VENDOR)/etc/car_audio_configuration.xml \
     frameworks/native/data/etc/android.hardware.broadcastradio.xml:system/etc/permissions/android.hardware.broadcastradio.xml \
     frameworks/av/services/audiopolicy/config/a2dp_audio_policy_configuration.xml:$(TARGET_COPY_OUT_VENDOR)/etc/a2dp_audio_policy_configuration.xml \
     frameworks/av/services/audiopolicy/config/usb_audio_policy_configuration.xml:$(TARGET_COPY_OUT_VENDOR)/etc/usb_audio_policy_configuration.xml
+endif
 endif
 
 # Audio Control HAL
@@ -65,19 +61,17 @@ LOCAL_AUDIOCONTROL_HAL_PRODUCT_PACKAGE ?= android.hardware.automotive.audiocontr
 LOCAL_VHAL_PRODUCT_PACKAGE ?= android.hardware.automotive.vehicle@2.0-virtualization-service
 
 # EVS HAL
-LOCAL_EVS_PRODUCT_COPY_FILES ?= \
-    device/google/trout/product_files/etc/automotive/evs/config_override.json:${TARGET_COPY_OUT_SYSTEM}/etc/automotive/evs/config_override.json \
-    device/google/trout/product_files/vendor/etc/automotive/evs/evs_configuration_override.xml:$(TARGET_COPY_OUT_VENDOR)/etc/automotive/evs/evs_configuration_override.xml \
-
-LOCAL_EVS_PROPERTIES ?= persist.automotive.evs.mode=1
 LOCAL_EVS_RRO_PACKAGE_OVERLAYS ?= TroutEvsOverlay
+ENABLE_EVS_SERVICE ?= true
 ENABLE_EVS_SAMPLE ?= true
+ENABLE_SAMPLE_EVS_APP ?= false
 ENABLE_CAREVSSERVICE_SAMPLE ?= true
 
 PRODUCT_PACKAGES += $(LOCAL_EVS_RRO_PACKAGE_OVERLAYS)
 
 PRODUCT_COPY_FILES += \
-    ${LOCAL_EVS_PRODUCT_COPY_FILES} \
+    device/google/trout/product_files/etc/automotive/evs/config_override.json:${TARGET_COPY_OUT_SYSTEM}/etc/automotive/evs/config_override.json \
+    device/google/trout/product_files/vendor/etc/automotive/evs/evs_configuration_override.xml:$(TARGET_COPY_OUT_VENDOR)/etc/automotive/evs/evs_configuration_override.xml \
 
 # Disable Vulkan feature flag as it is not supported on trout
 TARGET_VULKAN_SUPPORT := false
@@ -86,7 +80,8 @@ PRODUCT_PROPERTY_OVERRIDES += \
     ro.hardware.type=automotive \
     ${LOCAL_AUDIO_PROPERTIES} \
     ${LOCAL_AUDIOCONTROL_PROPERTIES} \
-    ${LOCAL_DUMPSTATE_PROPERTIES}
+    ${LOCAL_DUMPSTATE_PROPERTIES} \
+    ${LOCAL_TRACING_SERVER_PROPERTIES}
 
 PRODUCT_CHARACTERISTICS := nosdcard,automotive
 
@@ -98,7 +93,7 @@ LOCAL_KEYMASTER_PRODUCT_PACKAGE ?= android.hardware.keymaster@4.1-service
 # Gatekeeper HAL
 LOCAL_GATEKEEPER_PRODUCT_PACKAGE ?= android.hardware.gatekeeper@1.0-service.software
 
-PRODUCT_PACKAGES += tinyplay
+PRODUCT_PACKAGES += tinyplay tinycap
 
 include packages/services/Car/cpp/computepipe/products/computepipe.mk
 
@@ -116,5 +111,7 @@ TARGET_SUPPORTS_USER_HAL ?= false
 ifeq ($(TARGET_SUPPORTS_USER_HAL),false)
 PRODUCT_SYSTEM_DEFAULT_PROPERTIES += android.car.user_hal_enabled=false
 endif
+
+PRODUCT_PACKAGES += android.automotive.tracing-client.trout
 
 BOARD_SEPOLICY_DIRS += device/google/trout/sepolicy/vendor/google
