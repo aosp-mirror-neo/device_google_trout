@@ -59,6 +59,9 @@ endif
 # Audio Control HAL
 LOCAL_AUDIOCONTROL_HAL_PRODUCT_PACKAGE ?= android.hardware.automotive.audiocontrol-service.trout
 
+# VirtWiFi interface settings
+DEVICE_VIRTWIFI_PORT ?= eth0
+
 # Dumpstate HAL
 # TODO(b/215200137): Re-enable once converted to AIDL
 #LOCAL_DUMPSTATE_PRODUCT_PACKAGE ?= android.hardware.dumpstate@1.1-service.trout
