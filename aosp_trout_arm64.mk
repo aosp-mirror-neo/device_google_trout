@@ -47,8 +47,20 @@ endif
 TARGET_USES_CUTTLEFISH_AUDIO ?= false
 AUDIO_FEATURE_HFP_ENABLED ?= true
 
-# HWComposer choice
-TARGET_ENABLE_DRMHWCOMPOSER ?= true
+# HWComposer choice. Setting this flag to true
+# will disable Ranchu and turn on the legacy
+# drmhwc. This is not a supported configuration and
+# should only be turned on for debugging and experimental
+# purposes. In general, omitting this line or leaving the
+# default configured (false) will do the right thing and pick
+# Ranchu from upstream Cuttlefish
+TARGET_ENABLE_DRMHWCOMPOSER ?= false
+
+# Workaround for b/246500971 - OpSy host virtio-gpu process
+# crashes while booting.
+# Setting this flag to true will disable the Android boot
+# animation which provokes the crash.
+TARGET_DISABLE_BOOT_ANIMATION ?= true
 
 # Audio Control HAL
 # TODO (chenhaosjtuacm, egranata): move them to kernel command line
