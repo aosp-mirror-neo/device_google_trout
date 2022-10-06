@@ -28,14 +28,13 @@ LOCAL_AUDIO_PRODUCT_COPY_FILES := \
     device/google/trout/product_files/vendor/etc/primary_audio_policy_configuration.cf.xml:$(TARGET_COPY_OUT_VENDOR)/etc/primary_audio_policy_configuration.xml
 endif
 
-LOCAL_AUDIO_PROPERTIES ?=
-else
+ifeq ($(TARGET_USES_CUTTLEFISH_AUDIO),false)
 # Car Emulator Audio HAL
 LOCAL_AUDIO_PRODUCT_PACKAGE ?= \
     audio.primary.caremu \
     audio.r_submix.default \
     android.hardware.audio@6.0-impl:32 \
-    android.hardware.audio.effect@7.0-impl:32 \
+    android.hardware.audio.effect@6.0-impl:32 \
     android.hardware.audio.service \
     android.hardware.soundtrigger@2.3-impl
 
@@ -63,12 +62,11 @@ LOCAL_AUDIOCONTROL_HAL_PRODUCT_PACKAGE ?= android.hardware.automotive.audiocontr
 DEVICE_VIRTWIFI_PORT ?= eth0
 
 # Dumpstate HAL
-# TODO(b/215200137): Re-enable once converted to AIDL
-#LOCAL_DUMPSTATE_PRODUCT_PACKAGE ?= android.hardware.dumpstate@1.1-service.trout
-#LOCAL_DUMPSTATE_PROPERTIES ?= \
-#    ro.vendor.dumpstate.server.cid=2 \
-#    ro.vendor.dumpstate.server.port=9310 \
-#    ro.vendor.helpersystem.log_loc=/data/host_logs \
+LOCAL_DUMPSTATE_PRODUCT_PACKAGE ?= android.hardware.automotive.dumpstate-service.trout
+LOCAL_DUMPSTATE_PROPERTIES ?= \
+    ro.vendor.dumpstate.server.cid=2 \
+    ro.vendor.dumpstate.server.port=9310 \
+    ro.vendor.helpersystem.log_loc=/data/host_logs \
 
 # Vehicle HAL
 LOCAL_VHAL_PRODUCT_PACKAGE ?= android.hardware.automotive.vehicle@2.0-virtualization-service
@@ -76,7 +74,10 @@ LOCAL_VHAL_PRODUCT_PACKAGE ?= android.hardware.automotive.vehicle@2.0-virtualiza
 # EVS HAL
 LOCAL_EVS_PROPERTIES ?= persist.automotive.evs.mode=1
 LOCAL_EVS_RRO_PACKAGE_OVERLAYS ?= TroutEvsOverlay
+ENABLE_EVS_SERVICE ?= true
+ENABLE_MOCK_EVSHAL ?= false
 ENABLE_EVS_SAMPLE ?= true
+ENABLE_SAMPLE_EVS_APP ?= false
 ENABLE_CAREVSSERVICE_SAMPLE ?= true
 
 PRODUCT_PACKAGES += $(LOCAL_EVS_RRO_PACKAGE_OVERLAYS)
@@ -95,12 +96,16 @@ PRODUCT_PROPERTY_OVERRIDES += \
     ${LOCAL_DUMPSTATE_PROPERTIES} \
     ${LOCAL_TRACING_SERVER_PROPERTIES}
 
+ifeq ($(TARGET_DISABLE_BOOT_ANIMATION),true)
+PRODUCT_PROPERTY_OVERRIDES += debug.sf.nobootanimation=1
+endif
+
 PRODUCT_CHARACTERISTICS := nosdcard,automotive
 
 TARGET_BOARD_INFO_FILE ?= device/google/trout/board-info.txt
 
 # Keymaster HAL
-LOCAL_KEYMASTER_PRODUCT_PACKAGE ?= android.hardware.keymaster@4.1-service
+LOCAL_KEYMINT_PRODUCT_PACKAGE ?= android.hardware.keymaster@4.1-service
 
 # Gatekeeper HAL
 LOCAL_GATEKEEPER_PRODUCT_PACKAGE ?= android.hardware.gatekeeper@1.0-service.software
@@ -127,3 +132,5 @@ endif
 PRODUCT_PACKAGES += android.automotive.tracing-client.trout
 
 BOARD_SEPOLICY_DIRS += device/google/trout/sepolicy/vendor/google
+
+DEVICE_MANIFEST_FILE += device/google/trout/manifest.xml
