@@ -61,6 +61,7 @@ LOCAL_AUDIOCONTROL_HAL_PRODUCT_PACKAGE ?= android.hardware.automotive.audiocontr
 
 # VirtWiFi interface settings
 DEVICE_VIRTWIFI_PORT ?= eth0
+PRODUCT_VENDOR_PROPERTIES += ro.vendor.disable_rename_eth0=true
 
 # Dumpstate HAL
 # TODO(b/215200137): Re-enable once converted to AIDL
