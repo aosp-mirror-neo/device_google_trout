@@ -14,19 +14,9 @@
 # limitations under the License.
 #
 
-# Enable sparse on all filesystem images
-TARGET_USERIMAGES_SPARSE_EROFS_DISABLED ?= false
-TARGET_USERIMAGES_SPARSE_EXT_DISABLED ?= false
-TARGET_USERIMAGES_SPARSE_F2FS_DISABLED ?= false
-
 #
 # arm64 target for Trout
 #
-
-BOARD_BOOT_HEADER_VERSION := 3
-
--include device/google/cuttlefish/shared/BoardConfig.mk
--include device/google/cuttlefish/shared/virgl/BoardConfig.mk
 
 TARGET_BOARD_PLATFORM := vsoc_arm64
 TARGET_ARCH := arm64
@@ -35,18 +25,24 @@ TARGET_CPU_ABI := arm64-v8a
 TARGET_CPU_VARIANT := cortex-a53
 
 AUDIOSERVER_MULTILIB := first
-BOARD_VENDOR_RAMDISK_KERNEL_MODULES += $(wildcard kernel/prebuilts/common-modules/virtual-device/$(TARGET_KERNEL_USE)/arm64/*.ko)
 
 HOST_CROSS_OS := linux_bionic
 HOST_CROSS_ARCH := arm64
 HOST_CROSS_2ND_ARCH :=
 
-# Reset this variable to re-enable ramdisk.
-BOARD_INIT_BOOT_IMAGE_PARTITION_SIZE :=
-
 # Android Bluetooth stack configuration
 LOCAL_BLUETOOTH_BDROID_BUILDCFG_INCLUDE_DIR ?= device/google/trout/product_files/bluetooth
 BOARD_BLUETOOTH_BDROID_BUILDCFG_INCLUDE_DIR := $(LOCAL_BLUETOOTH_BDROID_BUILDCFG_INCLUDE_DIR)
+
+# Enable sparse on all filesystem images
+TARGET_USERIMAGES_SPARSE_EROFS_DISABLED ?= false
+TARGET_USERIMAGES_SPARSE_EXT_DISABLED ?= false
+TARGET_USERIMAGES_SPARSE_F2FS_DISABLED ?= false
+
+BOARD_BOOT_HEADER_VERSION := 3
+
+# Reset this variable to re-enable ramdisk.
+BOARD_INIT_BOOT_IMAGE_PARTITION_SIZE :=
 
 # Turn off AVB so that trout can boot
 BOARD_AVB_MAKE_VBMETA_IMAGE_ARGS += --flag 2
@@ -75,3 +71,6 @@ BOARD_KERNEL_CMDLINE += androidboot.wifi_mac_prefix=5554
 
 # Add default fstab settings
 BOARD_KERNEL_CMDLINE += androidboot.fstab_name=fstab androidboot.fstab_suffix=trout
+
+-include device/google/cuttlefish/shared/BoardConfig.mk
+-include device/google/cuttlefish/shared/virgl/BoardConfig.mk
