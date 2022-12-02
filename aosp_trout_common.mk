@@ -59,6 +59,10 @@ endif
 # Audio Control HAL
 LOCAL_AUDIOCONTROL_HAL_PRODUCT_PACKAGE ?= android.hardware.automotive.audiocontrol-service.trout
 
+# VirtWiFi interface settings
+DEVICE_VIRTWIFI_PORT ?= eth0
+PRODUCT_VENDOR_PROPERTIES += ro.vendor.disable_rename_eth0=true
+
 # Dumpstate HAL
 # TODO(b/215200137): Re-enable once converted to AIDL
 #LOCAL_DUMPSTATE_PRODUCT_PACKAGE ?= android.hardware.dumpstate@1.1-service.trout
@@ -75,6 +79,7 @@ LOCAL_EVS_PROPERTIES ?= persist.automotive.evs.mode=1
 LOCAL_EVS_RRO_PACKAGE_OVERLAYS ?= TroutEvsOverlay
 ENABLE_EVS_SAMPLE ?= true
 ENABLE_CAREVSSERVICE_SAMPLE ?= true
+ENABLE_SAMPLE_EVS_APP ?= false
 
 PRODUCT_PACKAGES += $(LOCAL_EVS_RRO_PACKAGE_OVERLAYS)
 

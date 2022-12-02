@@ -14,18 +14,9 @@
 # limitations under the License.
 #
 
-# Enable sparse on all filesystem images
-TARGET_USERIMAGES_SPARSE_EROFS_DISABLED ?= false
-TARGET_USERIMAGES_SPARSE_EXT_DISABLED ?= false
-TARGET_USERIMAGES_SPARSE_F2FS_DISABLED ?= false
-
 #
 # arm64 target for Trout
 #
-
-BOARD_BOOT_HEADER_VERSION := 3
-
--include device/google/cuttlefish/shared/BoardConfig.mk
 
 TARGET_BOARD_PLATFORM := vsoc_arm64
 TARGET_ARCH := arm64
@@ -34,7 +25,6 @@ TARGET_CPU_ABI := arm64-v8a
 TARGET_CPU_VARIANT := cortex-a53
 
 AUDIOSERVER_MULTILIB := first
-BOARD_VENDOR_RAMDISK_KERNEL_MODULES += $(wildcard kernel/prebuilts/common-modules/virtual-device/$(TARGET_KERNEL_USE)/arm64/*.ko)
 
 HOST_CROSS_OS := linux_bionic
 HOST_CROSS_ARCH := arm64
@@ -43,3 +33,13 @@ HOST_CROSS_2ND_ARCH :=
 # Android Bluetooth stack configuration
 LOCAL_BLUETOOTH_BDROID_BUILDCFG_INCLUDE_DIR ?= device/google/trout/product_files/bluetooth
 BOARD_BLUETOOTH_BDROID_BUILDCFG_INCLUDE_DIR := $(LOCAL_BLUETOOTH_BDROID_BUILDCFG_INCLUDE_DIR)
+
+# Enable sparse on all filesystem images
+TARGET_USERIMAGES_SPARSE_EROFS_DISABLED ?= false
+TARGET_USERIMAGES_SPARSE_EXT_DISABLED ?= false
+TARGET_USERIMAGES_SPARSE_F2FS_DISABLED ?= false
+
+BOARD_BOOT_HEADER_VERSION := 3
+
+-include device/google/cuttlefish/shared/BoardConfig.mk
+-include device/google/cuttlefish/shared/virgl/BoardConfig.mk
