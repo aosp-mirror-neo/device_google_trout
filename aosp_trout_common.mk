@@ -33,8 +33,8 @@ LOCAL_AUDIO_DEVICE_PACKAGE_OVERLAYS ?= device/generic/car/emulator/audio/overlay
 
 LOCAL_AUDIO_PROPERTIES ?= \
     ro.hardware.audio.primary=caremu \
-    ro.vendor.caremu.audiohal.out_period_ms=40 \
-    ro.vendor.caremu.audiohal.in_period_ms=40 \
+    ro.vendor.caremu.audiohal.out_period_ms=16 \
+    ro.vendor.caremu.audiohal.in_period_ms=16
 
 ifndef LOCAL_AUDIO_PRODUCT_COPY_FILES
 LOCAL_AUDIO_PRODUCT_COPY_FILES := \
@@ -62,15 +62,19 @@ LOCAL_VHAL_PRODUCT_PACKAGE ?= android.hardware.automotive.vehicle@2.0-virtualiza
 # EVS HAL
 LOCAL_EVS_RRO_PACKAGE_OVERLAYS ?= TroutEvsOverlay
 ENABLE_EVS_SERVICE ?= true
+ENABLE_MOCK_EVSHAL ?= false
 ENABLE_EVS_SAMPLE ?= true
 ENABLE_SAMPLE_EVS_APP ?= false
 ENABLE_CAREVSSERVICE_SAMPLE ?= true
 
 PRODUCT_PACKAGES += $(LOCAL_EVS_RRO_PACKAGE_OVERLAYS)
 
-PRODUCT_COPY_FILES += \
+ifeq ($(LOCAL_EVS_PRODUCT_COPY_FILES),)
+LOCAL_EVS_PRODUCT_COPY_FILES := \
     device/google/trout/product_files/etc/automotive/evs/config_override.json:${TARGET_COPY_OUT_SYSTEM}/etc/automotive/evs/config_override.json \
-    device/google/trout/product_files/vendor/etc/automotive/evs/evs_configuration_override.xml:$(TARGET_COPY_OUT_VENDOR)/etc/automotive/evs/evs_configuration_override.xml \
+    device/google/trout/product_files/vendor/etc/automotive/evs/evs_configuration_override.xml:$(TARGET_COPY_OUT_VENDOR)/etc/automotive/evs/evs_configuration_override.xml
+endif
+PRODUCT_COPY_FILES += $(LOCAL_EVS_PRODUCT_COPY_FILES)
 
 # Disable Vulkan feature flag as it is not supported on trout
 TARGET_VULKAN_SUPPORT := false
@@ -80,7 +84,12 @@ PRODUCT_PROPERTY_OVERRIDES += \
     ${LOCAL_AUDIO_PROPERTIES} \
     ${LOCAL_AUDIOCONTROL_PROPERTIES} \
     ${LOCAL_DUMPSTATE_PROPERTIES} \
-    ${LOCAL_TRACING_SERVER_PROPERTIES}
+    ${LOCAL_TRACING_SERVER_PROPERTIES} \
+    ro.audio.flinger_standbytime_ms=0
+
+ifeq ($(TARGET_DISABLE_BOOT_ANIMATION),true)
+PRODUCT_PROPERTY_OVERRIDES += debug.sf.nobootanimation=1
+endif
 
 PRODUCT_CHARACTERISTICS := nosdcard,automotive
 

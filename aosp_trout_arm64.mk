@@ -47,8 +47,14 @@ endif
 TARGET_USES_CUTTLEFISH_AUDIO ?= false
 AUDIO_FEATURE_HFP_ENABLED ?= true
 
-# HWComposer choice
-TARGET_ENABLE_DRMHWCOMPOSER ?= true
+# HWComposer choice. Setting this flag to true
+# will disable Ranchu and turn on the legacy
+# drmhwc. This is not a supported configuration and
+# should only be turned on for debugging and experimental
+# purposes. In general, omitting this line or leaving the
+# default configured (false) will do the right thing and pick
+# Ranchu from upstream Cuttlefish
+TARGET_ENABLE_DRMHWCOMPOSER ?= false
 
 # Audio Control HAL
 # TODO (chenhaosjtuacm, egranata): move them to kernel command line
@@ -91,6 +97,14 @@ PRODUCT_COPY_FILES += \
     frameworks/native/data/etc/android.hardware.sensor.accelerometer.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.hardware.sensor.accelerometer.xml \
 
 TARGET_USES_INITBOOT ?= false
+
+# WiFi configuration
+ifndef DEVICE_VIRTWIFI_PORT
+DEVICE_VIRTWIFI_PORT := eth0
+endif
+PRODUCT_PROPERTY_OVERRIDES += ro.vendor.disable_rename_eth0?=true
+PRODUCT_COPY_FILES += device/google/trout/trout_arm64/wifi/virtwifi.sh:$(TARGET_COPY_OUT_VENDOR)/bin/virtwifi.sh
+PRODUCT_COPY_FILES += device/google/trout/trout_arm64/wifi/virtwifi.rc:$(TARGET_COPY_OUT_VENDOR)/etc/init/virtwifi.rc
 
 PRODUCT_NAME := aosp_trout_arm64
 PRODUCT_DEVICE := trout_arm64
