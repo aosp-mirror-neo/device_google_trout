@@ -39,7 +39,42 @@ TARGET_USERIMAGES_SPARSE_EROFS_DISABLED ?= false
 TARGET_USERIMAGES_SPARSE_EXT_DISABLED ?= false
 TARGET_USERIMAGES_SPARSE_F2FS_DISABLED ?= false
 
+ifndef TARGET_BOOTLOADER_BOARD_NAME
+TARGET_BOOTLOADER_BOARD_NAME := trout
+endif
+
 BOARD_BOOT_HEADER_VERSION := 3
+
+# Reset this variable to re-enable ramdisk.
+BOARD_INIT_BOOT_IMAGE_PARTITION_SIZE :=
+
+# Turn off AVB so that trout can boot
+BOARD_AVB_MAKE_VBMETA_IMAGE_ARGS += --flag 2
+BOARD_KERNEL_CMDLINE += androidboot.verifiedbootstate=orange
+
+# Set SELinux to permissive mode for trout
+BOARD_KERNEL_CMDLINE += androidboot.selinux=permissive
+BOARD_KERNEL_CMDLINE += enforcing=0
+
+# Declare trout as a Cuttlefish HW
+BOARD_KERNEL_CMDLINE += androidboot.hardware=cutf_cvm
+BOARD_KERNEL_CMDLINE += androidboot.serialno=CUTTLEFISHCVD01
+BOARD_KERNEL_CMDLINE += androidboot.cf_devcfg=1
+
+# Set GPU properties
+BOARD_KERNEL_CMDLINE += androidboot.cpuvulkan.version=0
+BOARD_KERNEL_CMDLINE += androidboot.hardware.gralloc=minigbm
+BOARD_KERNEL_CMDLINE += androidboot.hardware.hwcomposer=ranchu
+BOARD_KERNEL_CMDLINE += androidboot.hardware.egl=mesa
+BOARD_KERNEL_CMDLINE += androidboot.hardware.hwcomposer.mode=client
+BOARD_KERNEL_CMDLINE += androidboot.hardware.hwcomposer.display_finder_mode=drm
+BOARD_KERNEL_CMDLINE += androidboot.lcd_density=160
+
+# Add WiFi configuration for VirtWifi network
+BOARD_KERNEL_CMDLINE += androidboot.wifi_mac_prefix=5554
+
+# Add default fstab settings
+BOARD_KERNEL_CMDLINE += androidboot.fstab_name=fstab androidboot.fstab_suffix=trout
 
 -include device/google/cuttlefish/shared/BoardConfig.mk
 -include device/google/cuttlefish/shared/virgl/BoardConfig.mk
