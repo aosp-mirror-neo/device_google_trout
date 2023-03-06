@@ -18,4 +18,4 @@
 # x86 target for Trout
 #
 
--include device/google/cuttlefish/vsoc_x86/BoardConfig.mk
+-include device/google/cuttlefish/vsoc_x86_64_only/BoardConfig.mk
