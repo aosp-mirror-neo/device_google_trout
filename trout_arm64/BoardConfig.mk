@@ -22,11 +22,11 @@ TARGET_USERIMAGES_SPARSE_F2FS_DISABLED ?= false
 #
 # arm64 target for Trout
 #
+ifndef TARGET_BOOTLOADER_BOARD_NAME
+TARGET_BOOTLOADER_BOARD_NAME := trout
+endif
 
 BOARD_BOOT_HEADER_VERSION := 3
-
-# Package ramdisk.img in target package
-BOARD_IMG_USE_RAMDISK := true
 
 # Kernel - prefer version 5.10 by default for trout
 TARGET_KERNEL_USE ?= 5.10
@@ -50,8 +50,7 @@ TARGET_ARCH_VARIANT := armv8-a
 TARGET_CPU_ABI := arm64-v8a
 TARGET_CPU_VARIANT := cortex-a53
 
--include device/google/cuttlefish/shared/BoardConfig.mk
--include device/google/cuttlefish/shared/virgl/BoardConfig.mk
+-include device/google/trout/shared/BoardConfig.mk
 
 TROUT_KO_DIR ?= $(TROUT_KERNEL_DIR)
 ifneq ($(TROUT_KO_DIR),)
@@ -63,9 +62,6 @@ AUDIOSERVER_MULTILIB := first
 HOST_CROSS_OS := linux_bionic
 HOST_CROSS_ARCH := arm64
 HOST_CROSS_2ND_ARCH :=
-
-# Reset this variable to re-enable ramdisk.
-BOARD_INIT_BOOT_IMAGE_PARTITION_SIZE :=
 
 # Android Bluetooth stack configuration
 LOCAL_BLUETOOTH_BDROID_BUILDCFG_INCLUDE_DIR ?= device/google/trout/product_files/bluetooth

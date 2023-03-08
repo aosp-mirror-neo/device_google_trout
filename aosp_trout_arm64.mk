@@ -19,6 +19,9 @@
 TARGET_USES_CF_RILD ?= false
 $(call inherit-product, device/google/cuttlefish/vsoc_arm64_only/auto/aosp_cf.mk)
 
+# Prefer ext4 for the system image
+TARGET_RO_FILE_SYSTEM_TYPE := ext4
+
 # Audio HAL
 # TODO: turn back on goldfish HAL and HFP
 TARGET_USES_CUTTLEFISH_AUDIO ?= false
@@ -74,6 +77,7 @@ PRODUCT_COPY_FILES += \
     frameworks/native/data/etc/android.hardware.sensor.accelerometer.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.hardware.sensor.accelerometer.xml \
 
 # WiFi configuration
+PRODUCT_ENFORCE_MAC80211_HWSIM ?= false
 ifndef DEVICE_VIRTWIFI_PORT
 DEVICE_VIRTWIFI_PORT := eth0
 endif
