@@ -52,12 +52,11 @@ endif
 LOCAL_AUDIOCONTROL_HAL_PRODUCT_PACKAGE ?= android.hardware.automotive.audiocontrol-service.trout
 
 # Dumpstate HAL
-# TODO(b/215200137): Re-enable once converted to AIDL
-#LOCAL_DUMPSTATE_PRODUCT_PACKAGE ?= android.hardware.dumpstate@1.1-service.trout
-#LOCAL_DUMPSTATE_PROPERTIES ?= \
-#    ro.vendor.dumpstate.server.cid=2 \
-#    ro.vendor.dumpstate.server.port=9310 \
-#    ro.vendor.helpersystem.log_loc=/data/host_logs \
+LOCAL_DUMPSTATE_PRODUCT_PACKAGE ?= android.hardware.automotive.dumpstate-service.trout
+LOCAL_DUMPSTATE_PROPERTIES ?= \
+    ro.vendor.dumpstate.server.cid=2 \
+    ro.vendor.dumpstate.server.port=9310 \
+    ro.vendor.helpersystem.log_loc=/data/host_logs \
 
 # Vehicle HAL
 LOCAL_VHAL_PRODUCT_PACKAGE ?= android.hardware.automotive.vehicle@2.0-virtualization-service
@@ -74,15 +73,10 @@ PRODUCT_PACKAGES += $(LOCAL_EVS_RRO_PACKAGE_OVERLAYS)
 
 ifeq ($(LOCAL_EVS_PRODUCT_COPY_FILES),)
 LOCAL_EVS_PRODUCT_COPY_FILES := \
-    device/google/trout/product_files/etc/automotive/evs/config_override.json:${TARGET_COPY_OUT_VENDOR}/etc/automotive/evs/config_override.json \
+    device/google/trout/product_files/etc/automotive/evs/config_override.json:${TARGET_COPY_OUT_SYSTEM}/etc/automotive/evs/config_override.json \
     device/google/trout/product_files/vendor/etc/automotive/evs/evs_configuration_override.xml:$(TARGET_COPY_OUT_VENDOR)/etc/automotive/evs/evs_configuration_override.xml
 endif
 PRODUCT_COPY_FILES += $(LOCAL_EVS_PRODUCT_COPY_FILES)
-
-# Other HALs
-# We are inheriting Configurations from Cuttlefish, but our FCM level might lag behind, so we may select some older HAL implentations
-# if the Cuttlefish default HALs are too new.
-LOCAL_THERMAL_HAL_PRODUCT_PACKAGE ?= android.hardware.thermal@2.0-service.mock
 
 # Disable Vulkan feature flag as it is not supported on trout
 TARGET_VULKAN_SUPPORT := false
@@ -110,8 +104,6 @@ LOCAL_KEYMINT_PRODUCT_PACKAGE ?= android.hardware.keymaster@4.1-service
 LOCAL_GATEKEEPER_PRODUCT_PACKAGE ?= android.hardware.gatekeeper@1.0-service.software
 
 PRODUCT_PACKAGES += tinyplay tinycap
-
-include packages/services/Car/cpp/computepipe/products/computepipe.mk
 
 # Trout fstab (workaround b/182190949)
 PRODUCT_COPY_FILES += \
