@@ -22,11 +22,27 @@ TARGET_USERIMAGES_SPARSE_F2FS_DISABLED ?= false
 #
 # arm64 target for Trout
 #
+ifndef TARGET_BOOTLOADER_BOARD_NAME
+TARGET_BOOTLOADER_BOARD_NAME := trout
+endif
 
 BOARD_BOOT_HEADER_VERSION := 3
 
--include device/google/cuttlefish/shared/BoardConfig.mk
--include device/google/cuttlefish/shared/virgl/BoardConfig.mk
+# Kernel - prefer version 5.10 by default for trout
+TARGET_KERNEL_USE ?= 5.10
+
+TROUT_KERNEL_DIR ?= $(wildcard device/google/trout-kernel/$(TARGET_KERNEL_USE)-arm64)
+
+# The trout kernel is provided as source to AOSP,
+# and thus we cannot rely on it existing outside of Google-internal builds. Make sure not to try
+# and include a missing kernel image.
+ifndef TARGET_KERNEL_PATH
+# wildcard is for existence checking,
+# so TROUT_KERNEL_IMAGE is suppose to be a list that contains at most one path.
+# The foreach below is only for extracting the path from the list.
+TROUT_KERNEL_IMAGE := $(wildcard $(TROUT_KERNEL_DIR)/Image)
+$(foreach kernel_img, $(TROUT_KERNEL_IMAGE), $(eval TARGET_KERNEL_PATH := $(kernel_img)))
+endif
 
 TARGET_BOARD_PLATFORM := vsoc_arm64
 TARGET_ARCH := arm64
@@ -34,15 +50,18 @@ TARGET_ARCH_VARIANT := armv8-a
 TARGET_CPU_ABI := arm64-v8a
 TARGET_CPU_VARIANT := cortex-a53
 
+-include device/google/trout/shared/BoardConfig.mk
+
+TROUT_KO_DIR ?= $(TROUT_KERNEL_DIR)
+ifneq ($(TROUT_KO_DIR),)
+BOARD_VENDOR_RAMDISK_KERNEL_MODULES := $(wildcard $(TROUT_KO_DIR)/*.ko)
+endif
+
 AUDIOSERVER_MULTILIB := first
-BOARD_VENDOR_RAMDISK_KERNEL_MODULES += $(wildcard kernel/prebuilts/common-modules/virtual-device/$(TARGET_KERNEL_USE)/arm64/*.ko)
 
 HOST_CROSS_OS := linux_bionic
 HOST_CROSS_ARCH := arm64
 HOST_CROSS_2ND_ARCH :=
-
-# Reset this variable to re-enable ramdisk.
-BOARD_INIT_BOOT_IMAGE_PARTITION_SIZE :=
 
 # Android Bluetooth stack configuration
 LOCAL_BLUETOOTH_BDROID_BUILDCFG_INCLUDE_DIR ?= device/google/trout/product_files/bluetooth

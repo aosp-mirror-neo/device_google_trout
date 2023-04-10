@@ -19,6 +19,8 @@ $(call add_soong_config_var_value,audio_extn_config,isHFPEnabled,$(AUDIO_FEATURE
 
 PRODUCT_PACKAGE_OVERLAYS += device/google/trout/product_files/overlay
 
+LOCAL_DEVICE_FCM_MANIFEST_FILE ?= device/google/trout/manifest.xml
+
 ifeq ($(TARGET_USES_CUTTLEFISH_AUDIO),false)
 # Car Emulator Audio HAL
 LOCAL_AUDIO_PRODUCT_PACKAGE ?= \
@@ -39,7 +41,7 @@ LOCAL_AUDIO_PROPERTIES ?= \
 ifndef LOCAL_AUDIO_PRODUCT_COPY_FILES
 LOCAL_AUDIO_PRODUCT_COPY_FILES := \
     device/google/trout/product_files/vendor/etc/audio_policy_configuration.emulator.xml:$(TARGET_COPY_OUT_VENDOR)/etc/audio_policy_configuration.xml \
-    device/generic/car/emulator/audio/car_audio_configuration.xml:$(TARGET_COPY_OUT_VENDOR)/etc/car_audio_configuration.xml \
+    device/google/trout/product_files/vendor/etc/car_audio_configuration.xml:$(TARGET_COPY_OUT_VENDOR)/etc/car_audio_configuration.xml \
     frameworks/native/data/etc/android.hardware.broadcastradio.xml:system/etc/permissions/android.hardware.broadcastradio.xml \
     frameworks/av/services/audiopolicy/config/a2dp_audio_policy_configuration.xml:$(TARGET_COPY_OUT_VENDOR)/etc/a2dp_audio_policy_configuration.xml \
     frameworks/av/services/audiopolicy/config/usb_audio_policy_configuration.xml:$(TARGET_COPY_OUT_VENDOR)/etc/usb_audio_policy_configuration.xml
@@ -50,12 +52,11 @@ endif
 LOCAL_AUDIOCONTROL_HAL_PRODUCT_PACKAGE ?= android.hardware.automotive.audiocontrol-service.trout
 
 # Dumpstate HAL
-# TODO(b/215200137): Re-enable once converted to AIDL
-#LOCAL_DUMPSTATE_PRODUCT_PACKAGE ?= android.hardware.dumpstate@1.1-service.trout
-#LOCAL_DUMPSTATE_PROPERTIES ?= \
-#    ro.vendor.dumpstate.server.cid=2 \
-#    ro.vendor.dumpstate.server.port=9310 \
-#    ro.vendor.helpersystem.log_loc=/data/host_logs \
+LOCAL_DUMPSTATE_PRODUCT_PACKAGE ?= android.hardware.automotive.dumpstate-service.trout
+LOCAL_DUMPSTATE_PROPERTIES ?= \
+    ro.vendor.dumpstate.server.cid=2 \
+    ro.vendor.dumpstate.server.port=9310 \
+    ro.vendor.helpersystem.log_loc=/data/host_logs \
 
 # Vehicle HAL
 LOCAL_VHAL_PRODUCT_PACKAGE ?= android.hardware.automotive.vehicle@2.0-virtualization-service
@@ -72,13 +73,13 @@ PRODUCT_PACKAGES += $(LOCAL_EVS_RRO_PACKAGE_OVERLAYS)
 
 ifeq ($(LOCAL_EVS_PRODUCT_COPY_FILES),)
 LOCAL_EVS_PRODUCT_COPY_FILES := \
-    device/google/trout/product_files/etc/automotive/evs/config_override.json:${TARGET_COPY_OUT_VENDOR}/etc/automotive/evs/config_override.json \
+    device/google/trout/product_files/etc/automotive/evs/config_override.json:${TARGET_COPY_OUT_SYSTEM}/etc/automotive/evs/config_override.json \
     device/google/trout/product_files/vendor/etc/automotive/evs/evs_configuration_override.xml:$(TARGET_COPY_OUT_VENDOR)/etc/automotive/evs/evs_configuration_override.xml
 endif
 PRODUCT_COPY_FILES += $(LOCAL_EVS_PRODUCT_COPY_FILES)
 
-# Disable Vulkan feature flag as it is not supported on trout
-TARGET_VULKAN_SUPPORT := false
+# A device inheriting trout can enable Vulkan support.
+TARGET_VULKAN_SUPPORT ?= false
 
 PRODUCT_PROPERTY_OVERRIDES += \
     ro.hardware.type=automotive \
@@ -104,8 +105,6 @@ LOCAL_GATEKEEPER_PRODUCT_PACKAGE ?= android.hardware.gatekeeper@1.0-service.soft
 
 PRODUCT_PACKAGES += tinyplay tinycap
 
-include packages/services/Car/cpp/computepipe/products/computepipe.mk
-
 # Trout fstab (workaround b/182190949)
 PRODUCT_COPY_FILES += \
     device/google/trout/product_files/fstab.trout:$(TARGET_COPY_OUT_RAMDISK)/fstab.trout \
@@ -124,5 +123,3 @@ endif
 PRODUCT_PACKAGES += android.automotive.tracing-client.trout
 
 BOARD_SEPOLICY_DIRS += device/google/trout/sepolicy/vendor/google
-
-DEVICE_MANIFEST_FILE += device/google/trout/manifest.xml
