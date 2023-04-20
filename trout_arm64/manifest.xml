@@ -8,19 +8,8 @@
 ** limitations under the License.
 */
 -->
-<!-- x86 specific HALs-->
+<!-- Trout ARM64 specific HALs-->
 <manifest version="1.0" type="device">
-   <hal format="aidl" optional="true">
-       <name>android.automotive.computepipe.registry</name>
-       <interface>
-           <name>IPipeQuery</name>
-           <instance>router</instance>
-       </interface>
-       <interface>
-           <name>IPipeRegistration</name>
-           <instance>router</instance>
-       </interface>
-   </hal>
     <hal format="hidl">
         <name>android.hardware.audio.effect</name>
         <transport>hwbinder</transport>

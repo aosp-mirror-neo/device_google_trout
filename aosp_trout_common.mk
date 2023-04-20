@@ -19,6 +19,8 @@ $(call add_soong_config_var_value,audio_extn_config,isHFPEnabled,$(AUDIO_FEATURE
 
 PRODUCT_PACKAGE_OVERLAYS += device/google/trout/product_files/overlay
 
+LOCAL_DEVICE_FCM_MANIFEST_FILE ?= device/google/trout/manifest.xml
+
 ifeq ($(TARGET_USES_CUTTLEFISH_AUDIO),false)
 # Car Emulator Audio HAL
 LOCAL_AUDIO_PRODUCT_PACKAGE ?= \
@@ -33,8 +35,8 @@ LOCAL_AUDIO_DEVICE_PACKAGE_OVERLAYS ?= device/generic/car/emulator/audio/overlay
 
 LOCAL_AUDIO_PROPERTIES ?= \
     ro.hardware.audio.primary=caremu \
-    ro.vendor.caremu.audiohal.out_period_ms=40 \
-    ro.vendor.caremu.audiohal.in_period_ms=40 \
+    ro.vendor.caremu.audiohal.out_period_ms=16 \
+    ro.vendor.caremu.audiohal.in_period_ms=16
 
 ifndef LOCAL_AUDIO_PRODUCT_COPY_FILES
 LOCAL_AUDIO_PRODUCT_COPY_FILES := \
@@ -75,9 +77,12 @@ ENABLE_SAMPLE_EVS_APP ?= false
 
 PRODUCT_PACKAGES += $(LOCAL_EVS_RRO_PACKAGE_OVERLAYS)
 
-PRODUCT_COPY_FILES += \
+ifeq ($(LOCAL_EVS_PRODUCT_COPY_FILES),)
+LOCAL_EVS_PRODUCT_COPY_FILES := \
     device/google/trout/product_files/etc/automotive/evs/config_override.json:${TARGET_COPY_OUT_SYSTEM}/etc/automotive/evs/config_override.json \
-    device/google/trout/product_files/vendor/etc/automotive/evs/evs_configuration_override.xml:$(TARGET_COPY_OUT_VENDOR)/etc/automotive/evs/evs_configuration_override.xml \
+    device/google/trout/product_files/vendor/etc/automotive/evs/evs_configuration_override.xml:$(TARGET_COPY_OUT_VENDOR)/etc/automotive/evs/evs_configuration_override.xml
+endif
+PRODUCT_COPY_FILES += $(LOCAL_EVS_PRODUCT_COPY_FILES)
 
 # A device inheriting trout can enable Vulkan support.
 TARGET_VULKAN_SUPPORT ?= false
@@ -87,7 +92,8 @@ PRODUCT_PROPERTY_OVERRIDES += \
     ${LOCAL_AUDIO_PROPERTIES} \
     ${LOCAL_AUDIOCONTROL_PROPERTIES} \
     ${LOCAL_DUMPSTATE_PROPERTIES} \
-    ${LOCAL_TRACING_SERVER_PROPERTIES}
+    ${LOCAL_TRACING_SERVER_PROPERTIES} \
+    ro.audio.flinger_standbytime_ms=0
 
 ifeq ($(TARGET_DISABLE_BOOT_ANIMATION),true)
 PRODUCT_PROPERTY_OVERRIDES += debug.sf.nobootanimation=1
@@ -125,5 +131,3 @@ endif
 PRODUCT_PACKAGES += android.automotive.tracing-client.trout
 
 BOARD_SEPOLICY_DIRS += device/google/trout/sepolicy/vendor/google
-
-DEVICE_MANIFEST_FILE += device/google/trout/manifest.xml
