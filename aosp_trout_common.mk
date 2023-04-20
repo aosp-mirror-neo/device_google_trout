@@ -19,6 +19,8 @@ $(call add_soong_config_var_value,audio_extn_config,isHFPEnabled,$(AUDIO_FEATURE
 
 PRODUCT_PACKAGE_OVERLAYS += device/google/trout/product_files/overlay
 
+LOCAL_DEVICE_FCM_MANIFEST_FILE ?= device/google/trout/manifest.xml
+
 ifeq ($(TARGET_USES_CUTTLEFISH_AUDIO),false)
 # Car Emulator Audio HAL
 LOCAL_AUDIO_PRODUCT_PACKAGE ?= \
@@ -129,5 +131,3 @@ endif
 PRODUCT_PACKAGES += android.automotive.tracing-client.trout
 
 BOARD_SEPOLICY_DIRS += device/google/trout/sepolicy/vendor/google
-
-DEVICE_MANIFEST_FILE += device/google/trout/manifest.xml
