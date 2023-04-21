@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-$(call inherit-product, device/google/cuttlefish/vsoc_x86_64/auto/aosp_cf.mk)
+$(call inherit-product, device/google/cuttlefish/vsoc_x86_64_only/auto/aosp_cf.mk)
 
 # Audio HAL
 TARGET_USES_CUTTLEFISH_AUDIO ?= false
@@ -24,6 +24,11 @@ TARGET_USES_CUTTLEFISH_AUDIO ?= false
 LOCAL_AUDIOCONTROL_PROPERTIES ?= \
     ro.vendor.audiocontrol.server.cid=3 \
     ro.vendor.audiocontrol.server.port=9410 \
+
+# Vehicle HAL
+ENABLE_VHAL_FAKE_GRPC_SERVER ?= true
+
+TARGET_VULKAN_SUPPORT := true
 
 include device/google/trout/aosp_trout_common.mk
 
