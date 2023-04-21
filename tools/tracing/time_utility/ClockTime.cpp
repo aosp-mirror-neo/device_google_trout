@@ -35,7 +35,7 @@ int GetTime(int type, uint64_t* ts_ns) {
 }
 
 uint64_t GetCPUTicks() {
-#if defined(__x86_64__) || defined(__amd64__)
+#if defined(__i386__) || defined(__x86_64__) || defined(__amd64__)
     uint32_t hi, lo;
     asm volatile("rdtsc" : "=a"(lo), "=d"(hi));
     return ((uint64_t)lo) | (((uint64_t)hi) << 32);
