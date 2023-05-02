@@ -25,6 +25,22 @@ uint64_t s2ns(uint64_t s) {
     return s * 1000000000ull;
 }
 
+void PrintHelpAndExit(const std::string& error_msg = "") {
+    int exit_error = 0;
+    if (!error_msg.empty()) {
+        std::cout << error_msg << "\n";
+        exit_error = 1;
+    }
+
+    std::cout << "Usage: ClockTime [CLOCK_ID]\n"
+              << "CLOCK_ID can be  CLOCK_REALTIME or CLOCK_MONOTONIC \n"
+              << "if omitted, it will obtain the processors's time-stamp counter \n"
+              << "on x86 it will use RDTSC, on arm64 it will use MRS CNTCVT. \n"
+              << "-h, --help      Print this help message\n";
+
+    exit(exit_error);
+}
+
 int GetTime(int type, uint64_t* ts_ns) {
     struct timespec ts;
     int res = clock_gettime(type, &ts);
@@ -45,23 +61,8 @@ uint64_t GetCPUTicks() {
     return vct;
 #else
     PrintHelpAndExit("GetCPUTicks() is not supported");
+    return 0;
 #endif
-}
-
-void PrintHelpAndExit(const std::string& error_msg = "") {
-    int exit_error = 0;
-    if (!error_msg.empty()) {
-        std::cout << error_msg << "\n";
-        exit_error = 1;
-    }
-
-    std::cout << "Usage: ClockTime [CLOCK_ID]\n"
-              << "CLOCK_ID can be  CLOCK_REALTIME or CLOCK_MONOTONIC \n"
-              << "if omitted, it will obtain the processors's time-stamp counter \n"
-              << "on x86 it will use RDTSC, on arm64 it will use MRS CNTCVT. \n"
-              << "-h, --help      Print this help message\n";
-
-    exit(exit_error);
 }
 
 int main(int argc, char* argv[]) {
