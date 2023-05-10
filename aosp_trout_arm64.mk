@@ -97,6 +97,9 @@ PRODUCT_COPY_FILES += \
     frameworks/native/data/etc/android.hardware.sensor.gyroscope.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.hardware.sensor.gyroscope.xml \
     frameworks/native/data/etc/android.hardware.sensor.accelerometer.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.hardware.sensor.accelerometer.xml \
 
+# trout fstab still uses ext4 for the system partition
+TARGET_RO_FILE_SYSTEM_TYPE ?= ext4
+
 PRODUCT_NAME := aosp_trout_arm64
 PRODUCT_DEVICE := trout_arm64
 PRODUCT_MODEL := arm64 trout
