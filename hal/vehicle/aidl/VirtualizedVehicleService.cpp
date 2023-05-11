@@ -21,10 +21,15 @@
 #include <android-base/logging.h>
 #include <android/binder_manager.h>
 #include <android/binder_process.h>
+#include <cutils/properties.h>
+#include <sys/socket.h>
+#include <linux/vm_sockets.h>
 
+#include <chrono>
 #include <memory>
 #include <utility>
 
+using ::android::hardware::automotive::utils::VsockConnectionInfo;
 using ::android::hardware::automotive::vehicle::DefaultVehicleHal;
 using ::android::hardware::automotive::vehicle::virtualization::GRPCVehicleHardware;
 
@@ -36,7 +41,7 @@ int main(int /* argc */, char* /* argv */[]) {
     }
     ABinderProcess_startThreadPool();
 
-    auto vsock = android::hardware::automotive::utils::VsockConnectionInfo::fromRoPropertyStore(
+    auto vsock = VsockConnectionInfo::fromRoPropertyStore(
             {
                     "ro.boot.vendor.vehiclehal.server.cid",
                     "ro.vendor.vehiclehal.server.cid",
@@ -47,11 +52,28 @@ int main(int /* argc */, char* /* argv */[]) {
             });
     CHECK(vsock.has_value()) << "Cannot read VHAL server address.";
 
+    if (property_get_bool("ro.vendor.vehiclehal.server.use_local_fake_server",
+                          /* default_value = */ false)) {
+        // When using the local fake server in the same VM, the CID read from the system properties
+        // will be ignored. We use the loopback CID instead.
+        LOG(INFO)
+                << "Using the local GRPC vehicle server that running on the same VM as the client.";
+        vsock->cid = VMADDR_CID_LOCAL;
+    }
+
     LOG(INFO) << "Connecting to vsock server at " << vsock->str();
 
+    constexpr auto maxConnectWaitTime = std::chrono::seconds(5);
     auto hardware = std::make_unique<GRPCVehicleHardware>(vsock->str());
-    auto vhal = ::ndk::SharedRefBase::make<DefaultVehicleHal>(std::move(hardware));
+    if (const auto connected = hardware->waitForConnected(maxConnectWaitTime)) {
+        LOG(INFO) << "Connected to vsock server at " << vsock->str();
+    } else {
+        LOG(INFO) << "Failed to connect to vsock server at " << vsock->str()
+                  << ", check if it is working, or maybe the server is coming up late.";
+        return 1;
+    }
 
+    auto vhal = ::ndk::SharedRefBase::make<DefaultVehicleHal>(std::move(hardware));
     LOG(INFO) << "Registering as service...";
     binder_exception_t err = AServiceManager_addService(
             vhal->asBinder().get(), "android.hardware.automotive.vehicle.IVehicle/default");
