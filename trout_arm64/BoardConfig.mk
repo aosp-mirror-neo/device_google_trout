@@ -77,4 +77,5 @@ BOARD_KERNEL_CMDLINE += androidboot.wifi_mac_prefix=5554
 BOARD_KERNEL_CMDLINE += androidboot.fstab_name=fstab androidboot.fstab_suffix=trout
 
 -include device/google/cuttlefish/shared/BoardConfig.mk
+-include device/google/cuttlefish/shared/graphics/BoardConfig.mk
 -include device/google/cuttlefish/shared/virgl/BoardConfig.mk
