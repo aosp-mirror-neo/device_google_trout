@@ -70,6 +70,10 @@ LOCAL_TRACING_SERVER_PROPERTIES ?= \
 
 include device/google/trout/aosp_trout_common.mk
 
+ifeq ($(TARGET_VULKAN_SUPPORT),true)
+$(call inherit-product, build/make/target/product/angle_supported.mk)
+endif
+
 DEVICE_MANIFEST_FILE += device/google/trout/trout_arm64/manifest.xml
 
 PRODUCT_PROPERTY_OVERRIDES += \
