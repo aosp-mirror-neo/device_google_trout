@@ -84,7 +84,7 @@ endif
 PRODUCT_COPY_FILES += $(LOCAL_EVS_PRODUCT_COPY_FILES)
 
 # A device inheriting trout can enable Vulkan support.
-TARGET_VULKAN_SUPPORT ?= false
+TARGET_VULKAN_SUPPORT ?= true
 
 PRODUCT_PROPERTY_OVERRIDES += \
     ro.hardware.type=automotive \
