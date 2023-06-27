@@ -25,29 +25,6 @@ uint64_t s2ns(uint64_t s) {
     return s * 1000000000ull;
 }
 
-int GetTime(int type, uint64_t* ts_ns) {
-    struct timespec ts;
-    int res = clock_gettime(type, &ts);
-    if (!res) {
-        *ts_ns = s2ns(ts.tv_sec) + ts.tv_nsec;
-    }
-    return res;
-}
-
-uint64_t GetCPUTicks() {
-#if defined(__i386__) || defined(__x86_64__) || defined(__amd64__)
-    uint32_t hi, lo;
-    asm volatile("rdtsc" : "=a"(lo), "=d"(hi));
-    return ((uint64_t)lo) | (((uint64_t)hi) << 32);
-#elif defined(__aarch64__)
-    uint64_t vct;
-    asm volatile("mrs %0, cntvct_el0" : "=r"(vct));
-    return vct;
-#else
-#error "no cpu tick support."
-#endif
-}
-
 void PrintHelpAndExit(const std::string& error_msg = "") {
     int exit_error = 0;
     if (!error_msg.empty()) {
@@ -62,6 +39,30 @@ void PrintHelpAndExit(const std::string& error_msg = "") {
               << "-h, --help      Print this help message\n";
 
     exit(exit_error);
+}
+
+int GetTime(int type, uint64_t* ts_ns) {
+    struct timespec ts;
+    int res = clock_gettime(type, &ts);
+    if (!res) {
+        *ts_ns = s2ns(ts.tv_sec) + ts.tv_nsec;
+    }
+    return res;
+}
+
+uint64_t GetCPUTicks() {
+#if defined(__x86_64__) || defined(__amd64__)
+    uint32_t hi, lo;
+    asm volatile("rdtsc" : "=a"(lo), "=d"(hi));
+    return ((uint64_t)lo) | (((uint64_t)hi) << 32);
+#elif defined(__aarch64__)
+    uint64_t vct;
+    asm volatile("mrs %0, cntvct_el0" : "=r"(vct));
+    return vct;
+#else
+    PrintHelpAndExit("GetCPUTicks() is not supported");
+    return 0;
+#endif
 }
 
 int main(int argc, char* argv[]) {
