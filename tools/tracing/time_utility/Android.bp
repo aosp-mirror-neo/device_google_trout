@@ -20,6 +20,7 @@ package {
 
 cc_binary {
     name: "android.automotive.tracing.time-util.trout",
+    vendor:true,
     srcs: [
         "ClockTime.cpp",
     ],
