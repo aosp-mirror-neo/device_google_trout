@@ -41,7 +41,7 @@ LOCAL_AUDIO_PROPERTIES ?= \
 ifndef LOCAL_AUDIO_PRODUCT_COPY_FILES
 LOCAL_AUDIO_PRODUCT_COPY_FILES := \
     device/google/trout/product_files/vendor/etc/audio_policy_configuration.emulator.xml:$(TARGET_COPY_OUT_VENDOR)/etc/audio_policy_configuration.xml \
-    device/generic/car/emulator/audio/car_audio_configuration.xml:$(TARGET_COPY_OUT_VENDOR)/etc/car_audio_configuration.xml \
+    device/google/trout/product_files/vendor/etc/car_audio_configuration.xml:$(TARGET_COPY_OUT_VENDOR)/etc/car_audio_configuration.xml \
     frameworks/native/data/etc/android.hardware.broadcastradio.xml:system/etc/permissions/android.hardware.broadcastradio.xml \
     frameworks/av/services/audiopolicy/config/a2dp_audio_policy_configuration.xml:$(TARGET_COPY_OUT_VENDOR)/etc/a2dp_audio_policy_configuration.xml \
     frameworks/av/services/audiopolicy/config/usb_audio_policy_configuration.xml:$(TARGET_COPY_OUT_VENDOR)/etc/usb_audio_policy_configuration.xml
@@ -52,15 +52,21 @@ endif
 LOCAL_AUDIOCONTROL_HAL_PRODUCT_PACKAGE ?= android.hardware.automotive.audiocontrol-service.trout
 
 # Dumpstate HAL
-# TODO(b/215200137): Re-enable once converted to AIDL
-#LOCAL_DUMPSTATE_PRODUCT_PACKAGE ?= android.hardware.dumpstate@1.1-service.trout
-#LOCAL_DUMPSTATE_PROPERTIES ?= \
-#    ro.vendor.dumpstate.server.cid=2 \
-#    ro.vendor.dumpstate.server.port=9310 \
-#    ro.vendor.helpersystem.log_loc=/data/host_logs \
+LOCAL_DUMPSTATE_PRODUCT_PACKAGE ?= android.hardware.automotive.dumpstate-service.trout
+LOCAL_DUMPSTATE_PROPERTIES ?= \
+    ro.vendor.dumpstate.server.cid=2 \
+    ro.vendor.dumpstate.server.port=9310 \
+    ro.vendor.helpersystem.log_loc=/data/host_logs \
 
 # Vehicle HAL
-LOCAL_VHAL_PRODUCT_PACKAGE ?= android.hardware.automotive.vehicle@2.0-virtualization-service
+ENABLE_VHAL_FAKE_GRPC_SERVER ?= false
+LOCAL_VHAL_PROPERTIES ?=
+TROUT_DEFAULT_VHAL_PACKAGES = android.hardware.automotive.vehicle@default-trout-service
+ifeq ($(ENABLE_VHAL_FAKE_GRPC_SERVER),true)
+TROUT_DEFAULT_VHAL_PACKAGES += android.hardware.automotive.vehicle@default-trout-fake-hardware-grpc-server
+LOCAL_VHAL_PROPERTIES += ro.vendor.vehiclehal.server.use_local_fake_server=true
+endif
+LOCAL_VHAL_PRODUCT_PACKAGE ?= ${TROUT_DEFAULT_VHAL_PACKAGES}
 
 # EVS HAL
 LOCAL_EVS_RRO_PACKAGE_OVERLAYS ?= TroutEvsOverlay
@@ -79,13 +85,8 @@ LOCAL_EVS_PRODUCT_COPY_FILES := \
 endif
 PRODUCT_COPY_FILES += $(LOCAL_EVS_PRODUCT_COPY_FILES)
 
-# Other HALs
-# We are inheriting Configurations from Cuttlefish, but our FCM level might lag behind, so we may select some older HAL implentations
-# if the Cuttlefish default HALs are too new.
-LOCAL_THERMAL_HAL_PRODUCT_PACKAGE ?= android.hardware.thermal@2.0-service.mock
-
-# Disable Vulkan feature flag as it is not supported on trout
-TARGET_VULKAN_SUPPORT := false
+# A device inheriting trout can enable Vulkan support.
+TARGET_VULKAN_SUPPORT ?= false
 
 PRODUCT_PROPERTY_OVERRIDES += \
     ro.hardware.type=automotive \
@@ -93,6 +94,7 @@ PRODUCT_PROPERTY_OVERRIDES += \
     ${LOCAL_AUDIOCONTROL_PROPERTIES} \
     ${LOCAL_DUMPSTATE_PROPERTIES} \
     ${LOCAL_TRACING_SERVER_PROPERTIES} \
+    ${LOCAL_VHAL_PROPERTIES} \
     ro.audio.flinger_standbytime_ms=0
 
 ifeq ($(TARGET_DISABLE_BOOT_ANIMATION),true)
@@ -110,8 +112,6 @@ LOCAL_KEYMINT_PRODUCT_PACKAGE ?= android.hardware.keymaster@4.1-service
 LOCAL_GATEKEEPER_PRODUCT_PACKAGE ?= android.hardware.gatekeeper@1.0-service.software
 
 PRODUCT_PACKAGES += tinyplay tinycap
-
-include packages/services/Car/cpp/computepipe/products/computepipe.mk
 
 # Trout fstab (workaround b/182190949)
 PRODUCT_COPY_FILES += \
