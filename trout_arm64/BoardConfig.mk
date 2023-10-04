@@ -46,7 +46,7 @@ ifndef TARGET_BOOTLOADER_BOARD_NAME
 TARGET_BOOTLOADER_BOARD_NAME := trout
 endif
 
-BOARD_BOOT_HEADER_VERSION := 3
+BOARD_BOOT_HEADER_VERSION := 4
 
 # Reset this variable to re-enable ramdisk.
 BOARD_INIT_BOOT_IMAGE_PARTITION_SIZE :=
@@ -68,7 +68,7 @@ BOARD_KERNEL_CMDLINE += androidboot.cf_devcfg=1
 BOARD_KERNEL_CMDLINE += androidboot.cpuvulkan.version=0
 BOARD_KERNEL_CMDLINE += androidboot.hardware.gralloc=minigbm
 BOARD_KERNEL_CMDLINE += androidboot.hardware.hwcomposer=ranchu
-BOARD_KERNEL_CMDLINE += androidboot.hardware.egl=mesa
+BOARD_KERNEL_CMDLINE += androidboot.hardware.egl=emulation
 BOARD_KERNEL_CMDLINE += androidboot.hardware.hwcomposer.mode=client
 BOARD_KERNEL_CMDLINE += androidboot.hardware.hwcomposer.display_finder_mode=drm
 BOARD_KERNEL_CMDLINE += androidboot.lcd_density=160
@@ -81,4 +81,4 @@ BOARD_KERNEL_CMDLINE += androidboot.fstab_name=fstab androidboot.fstab_suffix=tr
 
 -include device/google/cuttlefish/shared/BoardConfig.mk
 -include device/google/cuttlefish/shared/graphics/BoardConfig.mk
--include device/google/cuttlefish/shared/virgl/BoardConfig.mk
+-include device/google/cuttlefish/shared/angle/BoardConfig.mk
