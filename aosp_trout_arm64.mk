@@ -20,28 +20,8 @@ TARGET_USES_CF_RILD ?= false
 
 $(call inherit-product, device/google/cuttlefish/vsoc_arm64_only/auto/aosp_cf.mk)
 
-# Package ramdisk.img in target package
-BOARD_IMG_USE_RAMDISK := true
-
-# Kernel - prefer version 5.10 by default for trout
-TARGET_KERNEL_USE ?= 5.10
-
-TROUT_KERNEL_DIR ?= $(wildcard device/google/trout-kernel/$(TARGET_KERNEL_USE)-arm64)
-
-# Currently, the trout kernel prebuilt is not being distributed to partners and AOSP,
-# and thus we cannot rely on it existing outside of Google-internal builds. Make sure not to try
-# and include a missing kernel image.
-TROUT_KERNEL_IMAGE := $(wildcard $(TROUT_KERNEL_DIR)/Image)
-ifneq ($(TROUT_KERNEL_IMAGE),)
-ifndef TARGET_KERNEL_PATH
-TARGET_KERNEL_PATH := $(TROUT_KERNEL_IMAGE)
-endif
-endif
-
-TROUT_KO_DIR ?= $(TROUT_KERNEL_DIR)
-ifneq ($(TROUT_KO_DIR),)
-BOARD_VENDOR_RAMDISK_KERNEL_MODULES := $(wildcard $(TROUT_KO_DIR)/*.ko)
-endif
+# Prefer ext4 for the system image
+TARGET_RO_FILE_SYSTEM_TYPE := ext4
 
 # Audio HAL
 # TODO: turn back on goldfish HAL and HFP
@@ -101,8 +81,14 @@ PRODUCT_COPY_FILES += \
     frameworks/native/data/etc/android.hardware.sensor.gyroscope.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.hardware.sensor.gyroscope.xml \
     frameworks/native/data/etc/android.hardware.sensor.accelerometer.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.hardware.sensor.accelerometer.xml \
 
-# trout fstab still uses ext4 for the system partition
-TARGET_RO_FILE_SYSTEM_TYPE ?= ext4
+# WiFi configuration
+PRODUCT_ENFORCE_MAC80211_HWSIM ?= false
+ifndef DEVICE_VIRTWIFI_PORT
+DEVICE_VIRTWIFI_PORT := eth0
+endif
+PRODUCT_PROPERTY_OVERRIDES += ro.vendor.disable_rename_eth0?=true
+PRODUCT_COPY_FILES += device/google/trout/trout_arm64/wifi/virtwifi.sh:$(TARGET_COPY_OUT_VENDOR)/bin/virtwifi.sh
+PRODUCT_COPY_FILES += device/google/trout/trout_arm64/wifi/virtwifi.rc:$(TARGET_COPY_OUT_VENDOR)/etc/init/virtwifi.rc
 
 PRODUCT_NAME := aosp_trout_arm64
 PRODUCT_DEVICE := trout_arm64
