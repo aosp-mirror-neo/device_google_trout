@@ -25,6 +25,11 @@ LOCAL_AUDIOCONTROL_PROPERTIES ?= \
     ro.vendor.audiocontrol.server.cid=3 \
     ro.vendor.audiocontrol.server.port=9410 \
 
+# Vehicle HAL
+ENABLE_VHAL_FAKE_GRPC_SERVER ?= true
+
+TARGET_VULKAN_SUPPORT := true
+
 include device/google/trout/aosp_trout_common.mk
 
 DEVICE_MANIFEST_FILE += device/google/trout/trout_x86_64/manifest.xml
