@@ -110,5 +110,3 @@ BOARD_KERNEL_CMDLINE += androidboot.wifi_mac_prefix=5554
 
 # Add default fstab settings
 BOARD_KERNEL_CMDLINE += androidboot.fstab_name=fstab androidboot.fstab_suffix=trout
-
--include device/google/cuttlefish/shared/angle/BoardConfig.mk
