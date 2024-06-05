@@ -15,29 +15,32 @@
  */
 
 #include <android-base/logging.h>
+#include <android/binder_process.h>
 #include <hidl/HidlTransportSupport.h>
 
-#include <vhal_v2_0/EmulatedVehicleConnector.h>
-#include <vhal_v2_0/EmulatedVehicleHal.h>
+#include <vhal_v2_0/DefaultVehicleHal.h>
 #include <vhal_v2_0/VehicleHalManager.h>
 
-#include "Utils.h"
 #include "GrpcVehicleClient.h"
+#include "Utils.h"
 
-using namespace android;
-using namespace android::hardware;
-using namespace android::hardware::automotive::vehicle::V2_0;
+using android::OK;
+using android::status_t;
+using android::hardware::configureRpcThreadpool;
+using android::hardware::joinRpcThreadpool;
+using android::hardware::automotive::vehicle::V2_0::VehicleHalManager;
+using android::hardware::automotive::vehicle::V2_0::VehiclePropertyStore;
 
 int main(int argc, char* argv[]) {
     namespace vhal_impl = android::hardware::automotive::vehicle::V2_0::impl;
 
-    auto serverInfo = vhal_impl::VsockServerInfo::fromRoPropertyStore();
+    auto serverInfo = vhal_impl::VirtualizedVhalServerInfo::fromRoPropertyStore();
     CHECK(serverInfo.has_value()) << "Invalid server CID/port combination";
+    LOG(INFO) << "Connecting to vsock server at " << serverInfo->vsock.str();
 
     auto store = std::make_unique<VehiclePropertyStore>();
-    auto connector = impl::makeGrpcVehicleClient(serverInfo->toUri());
-    auto hal = std::make_unique<impl::EmulatedVehicleHal>(store.get(), connector.get());
-    auto emulator = std::make_unique<impl::VehicleEmulator>(hal.get());
+    auto connector = vhal_impl::makeGrpcVehicleClient(serverInfo->getServerUri());
+    auto hal = std::make_unique<vhal_impl::DefaultVehicleHal>(store.get(), connector.get());
     auto service = std::make_unique<VehicleHalManager>(hal.get());
 
     configureRpcThreadpool(4, true /* callerWillJoin */);
@@ -53,5 +56,6 @@ int main(int argc, char* argv[]) {
     LOG(INFO) << "Ready";
     joinRpcThreadpool();
 
+    // We don't ever actually expect to return, so return an error if we do get here
     return 1;
 }

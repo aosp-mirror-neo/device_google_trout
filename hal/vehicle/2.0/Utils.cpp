@@ -16,15 +16,22 @@
 
 #include "Utils.h"
 
-#ifdef __ANDROID__
+#ifdef __BIONIC__
 #include <cutils/properties.h>
-#endif  // __ANDROID__
+#endif  // __BIONIC__
 
-#include <climits>
 #include <getopt.h>
 #include <stdlib.h>
+#include <string.h>
+#include <sys/select.h>
 #include <unistd.h>
+#include <array>
+#include <climits>
+#include <iostream>
 #include <sstream>
+
+using std::cerr;
+using std::endl;
 
 namespace android {
 namespace hardware {
@@ -33,36 +40,65 @@ namespace vehicle {
 namespace V2_0 {
 namespace impl {
 
-std::string VsockServerInfo::toUri() {
-    std::stringstream uri_stream;
-    uri_stream << "vsock:" << serverCid << ":" << serverPort;
-    return uri_stream.str();
+#ifdef __BIONIC__
+std::string VirtualizedVhalServerInfo::getServerUri() const {
+    return vsock.str();
+}
+#else
+std::string VirtualizedVhalServerInfo::getServerUri() const {
+    std::stringstream ss;
+
+    ss << "vsock:" << vsock.cid << ":" << vsock.port;
+    return ss.str();
+}
+#endif
+
+bool WaitForReadWithTimeout(int fd, struct timeval&& timeout) {
+    fd_set read_fd_set;
+    FD_ZERO(&read_fd_set);
+    FD_SET(fd, &read_fd_set);
+    auto ready = select(FD_SETSIZE, &read_fd_set, nullptr, nullptr, &timeout);
+
+    if (ready < 0) {
+        cerr << __func__ << ": fd: " << fd << ", errno: " << errno << ", " << strerror(errno)
+             << endl;
+        return false;
+    }
+    return ready > 0;
 }
 
 static std::optional<unsigned> parseUnsignedIntFromString(const char* optarg, const char* name) {
     auto v = strtoul(optarg, nullptr, 0);
     if (((v == ULONG_MAX) && (errno == ERANGE)) || (v > UINT_MAX)) {
-        LOG(WARNING) << name << " value is out of range: " << optarg;
+        cerr << name << " value is out of range: " << optarg << endl;
     } else if (v != 0) {
         return v;
     } else {
-        LOG(WARNING) << name << " value is invalid or missing: " << optarg;
+        cerr << name << " value is invalid or missing: " << optarg << endl;
     }
 
     return std::nullopt;
 }
 
-std::optional<VsockServerInfo> VsockServerInfo::fromCommandLine(int argc, char* argv[]) {
+std::optional<VirtualizedVhalServerInfo> VirtualizedVhalServerInfo::fromCommandLine(
+        int argc, char* argv[], std::string* error) {
+    // TODO(egranata): move command-line parsing into vsockinfo
     std::optional<unsigned int> cid;
     std::optional<unsigned int> port;
+    std::optional<std::string> powerStateMarkerFilePath;
+    std::optional<std::string> powerStateSocketPath;
 
     // unique values to identify the options
     constexpr int OPT_VHAL_SERVER_CID = 1001;
     constexpr int OPT_VHAL_SERVER_PORT_NUMBER = 1002;
+    constexpr int OPT_VHAL_SERVER_POWER_STATE_FILE = 1003;
+    constexpr int OPT_VHAL_SERVER_POWER_STATE_SOCKET = 1004;
 
     struct option longOptions[] = {
             {"server_cid", 1, 0, OPT_VHAL_SERVER_CID},
             {"server_port", 1, 0, OPT_VHAL_SERVER_PORT_NUMBER},
+            {"power_state_file", 1, 0, OPT_VHAL_SERVER_POWER_STATE_FILE},
+            {"power_state_socket", 1, 0, OPT_VHAL_SERVER_POWER_STATE_SOCKET},
             {},
     };
 
@@ -75,51 +111,56 @@ std::optional<VsockServerInfo> VsockServerInfo::fromCommandLine(int argc, char* 
             case OPT_VHAL_SERVER_PORT_NUMBER:
                 port = parseUnsignedIntFromString(optarg, "port");
                 break;
+            case OPT_VHAL_SERVER_POWER_STATE_FILE:
+                powerStateMarkerFilePath = std::string(optarg);
+                break;
+            case OPT_VHAL_SERVER_POWER_STATE_SOCKET:
+                powerStateSocketPath = std::string(optarg);
+                break;
             default:
                 // ignore other options
                 break;
         }
     }
 
-    if (cid && port) {
-        return VsockServerInfo{*cid, *port};
+    if (!cid.has_value() && error) {
+        *error += "Missing server CID. ";
+    }
+    if (!port.has_value() && error) {
+        *error += "Missing server port number. ";
+    }
+    if (!powerStateMarkerFilePath.has_value() && error) {
+        *error += "Missing power state marker file path. ";
+    }
+    if (!powerStateSocketPath.has_value() && error) {
+        *error += "Missing power state socket path. ";
+    }
+
+    if (cid && port && powerStateMarkerFilePath && powerStateSocketPath) {
+        return VirtualizedVhalServerInfo{
+                {*cid, *port}, *powerStateMarkerFilePath, *powerStateSocketPath};
     }
     return std::nullopt;
 }
 
-#ifdef __ANDROID__
+#ifdef __BIONIC__
+std::optional<VirtualizedVhalServerInfo> VirtualizedVhalServerInfo::fromRoPropertyStore() {
+    auto vsock = android::hardware::automotive::utils::VsockConnectionInfo::fromRoPropertyStore(
+            {
+                    "ro.boot.vendor.vehiclehal.server.cid",
+                    "ro.vendor.vehiclehal.server.cid",
+            },
+            {
+                    "ro.boot.vendor.vehiclehal.server.port",
+                    "ro.vendor.vehiclehal.server.port",
+            });
 
-static std::optional<unsigned> getNumberFromProperty(const char* key) {
-    auto value = property_get_int64(key, -1);
-    if ((value <= 0) || (value > UINT_MAX)) {
-        LOG(WARNING) << key << " is missing or out of bounds";
-        return std::nullopt;
-    }
-
-    return static_cast<unsigned int>(value);
-};
-
-std::optional<VsockServerInfo> VsockServerInfo::fromRoPropertyStore() {
-    constexpr const char* VHAL_SERVER_CID_PROPERTY_KEY = "ro.vendor.vehiclehal.server.cid";
-    constexpr const char* VHAL_SERVER_PORT_PROPERTY_KEY = "ro.vendor.vehiclehal.server.port";
-
-    const auto cid = getNumberFromProperty(VHAL_SERVER_CID_PROPERTY_KEY);
-    const auto port = getNumberFromProperty(VHAL_SERVER_PORT_PROPERTY_KEY);
-
-    if (cid && port) {
-        return VsockServerInfo{*cid, *port};
+    if (vsock) {
+        return VirtualizedVhalServerInfo{*vsock, "", ""};
     }
     return std::nullopt;
 }
-
-#else  // __ANDROID__
-
-std::optional<VsockServerInfo> VsockServerInfo::fromRoPropertyStore() {
-    LOG(FATAL) << "Android-only method";
-    return std::nullopt;
-}
-
-#endif  // __ANDROID__
+#endif  // __BIONIC__
 
 }  // namespace impl
 }  // namespace V2_0
