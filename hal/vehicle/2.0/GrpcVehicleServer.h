@@ -17,7 +17,20 @@
 #ifndef android_hardware_automotive_vehicle_V2_0_impl_virtialization_GrpcVehicleServer_H_
 #define android_hardware_automotive_vehicle_V2_0_impl_virtialization_GrpcVehicleServer_H_
 
-#include "vhal_v2_0/VehicleHalServer.h"
+#include "Utils.h"
+
+// TODO(chenjaosjtuacm,egranata): remove this hack during AIDL migration
+// If building for Android, use the VHAL server definition coming from
+// hardware/interfaces; if building for a host environment use the older
+// hardcoded header file coming from our own source code
+// These two versions export slightly incompatible C++ interfaces but this
+// only affects building the server, whereas the communication happens over
+// the VHAL protocol which is stable across Android releases
+#if defined(ANDROID) || defined(__ANDROID__)
+#include "vhal_v2_0/DefaultVehicleHalServer.h"
+#else
+#include "DefaultVehicleHalServer.h"
+#endif
 
 namespace android {
 namespace hardware {
@@ -28,15 +41,24 @@ namespace V2_0 {
 namespace impl {
 
 // Connect to the Vehicle Client via GRPC
-class GrpcVehicleServer : public VehicleHalServer {
+class GrpcVehicleServer : public DefaultVehicleHalServer {
   public:
-    // Start listening incoming calls, should never return if working normally
-    virtual void Start() = 0;
+    // Start listening incoming calls
+    virtual GrpcVehicleServer& Start() = 0;
+
+    // Wait until error or Stop is called
+    virtual void Wait() = 0;
+
+    // Stop the server
+    virtual GrpcVehicleServer& Stop() = 0;
+
+    // Methods for unit tests
+    virtual uint32_t NumOfActivePropertyValueStream() = 0;
 };
 
 using GrpcVehicleServerPtr = std::unique_ptr<GrpcVehicleServer>;
 
-GrpcVehicleServerPtr makeGrpcVehicleServer(const std::string& addr);
+GrpcVehicleServerPtr makeGrpcVehicleServer(const VirtualizedVhalServerInfo& serverInfo);
 
 }  // namespace impl
 
