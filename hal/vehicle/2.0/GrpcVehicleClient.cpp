@@ -24,6 +24,7 @@
 
 #include "VehicleServer.grpc.pb.h"
 #include "VehicleServer.pb.h"
+#include "vhal_v2_0/DefaultConfig.h"
 #include "vhal_v2_0/ProtoMessageConverter.h"
 
 namespace android {
@@ -41,7 +42,7 @@ static std::shared_ptr<::grpc::ChannelCredentials> getChannelCredentials() {
 
 class GrpcVehicleClientImpl : public VehicleHalClient {
   public:
-    GrpcVehicleClientImpl(const std::string& addr)
+    explicit GrpcVehicleClientImpl(const std::string& addr)
         : mServiceAddr(addr),
           mGrpcChannel(::grpc::CreateChannel(mServiceAddr, getChannelCredentials())),
           mGrpcStub(vhal_proto::VehicleServer::NewStub(mGrpcChannel)) {
@@ -51,6 +52,7 @@ class GrpcVehicleClientImpl : public VehicleHalClient {
     ~GrpcVehicleClientImpl() {
         mShuttingDownFlag.store(true);
         mShutdownCV.notify_all();
+
         if (mPollingThread.joinable()) {
             mPollingThread.join();
         }
@@ -61,6 +63,10 @@ class GrpcVehicleClientImpl : public VehicleHalClient {
     std::vector<VehiclePropConfig> getAllPropertyConfig() const override;
 
     StatusCode setProperty(const VehiclePropValue& value, bool updateStatus) override;
+
+    // methods from VehicleHalClient
+
+    void triggerSendAllValues() override;
 
   private:
     void StartValuePollingThread();
@@ -117,6 +123,18 @@ StatusCode GrpcVehicleClientImpl::setProperty(const VehiclePropValue& value, boo
     return static_cast<StatusCode>(vhal_status.status_code());
 }
 
+void GrpcVehicleClientImpl::triggerSendAllValues() {
+    ::grpc::ClientContext context;
+    ::google::protobuf::Empty empty_response;
+
+    auto grpc_status = mGrpcStub->SendAllPropertyValuesToStream(
+            &context, ::google::protobuf::Empty(), &empty_response);
+    if (!grpc_status.ok()) {
+        LOG(ERROR) << __func__ << ": GRPC SendAllPropertyValuesToStream Failed: "
+                   << grpc_status.error_message();
+    }
+}
+
 void GrpcVehicleClientImpl::StartValuePollingThread() {
     mPollingThread = std::thread([this]() {
         while (!mShuttingDownFlag.load()) {
@@ -133,6 +151,7 @@ void GrpcVehicleClientImpl::StartValuePollingThread() {
 
             auto value_stream =
                     mGrpcStub->StartPropertyValuesStream(&context, ::google::protobuf::Empty());
+            LOG(INFO) << __func__ << ": GRPC Value Streaming Started";
             vhal_proto::WrappedVehiclePropValue wrappedProtoValue;
             while (!mShuttingDownFlag.load() && value_stream->Read(&wrappedProtoValue)) {
                 VehiclePropValue value;
