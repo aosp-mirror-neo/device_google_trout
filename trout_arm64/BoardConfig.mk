@@ -48,8 +48,8 @@ endif
 
 BOARD_BOOT_HEADER_VERSION := 4
 
-# Kernel - prefer version 5.10 by default for trout
-TARGET_KERNEL_USE ?= 5.10
+# Kernel - prefer version 6.1 by default for trout
+TARGET_KERNEL_USE ?= 6.1
 
 # Select the prebuilt trout kernel if 5.10 or 5.4 is in use
 TROUT_KERNEL_DIR ?= $(wildcard device/google/trout-kernel/$(TARGET_KERNEL_USE)-arm64)
