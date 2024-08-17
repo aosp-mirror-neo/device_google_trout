@@ -54,6 +54,10 @@ endif
 # Audio Control HAL
 LOCAL_AUDIOCONTROL_HAL_PRODUCT_PACKAGE ?= android.hardware.automotive.audiocontrol-service.trout
 
+# VirtWiFi interface settings
+DEVICE_VIRTWIFI_PORT ?= eth0
+PRODUCT_VENDOR_PROPERTIES += ro.vendor.disable_rename_eth0=true
+
 # Dumpstate HAL
 # TODO(b/215200137): Re-enable once converted to AIDL
 #LOCAL_DUMPSTATE_PRODUCT_PACKAGE ?= android.hardware.dumpstate@1.1-service.trout
@@ -73,6 +77,7 @@ endif
 LOCAL_VHAL_PRODUCT_PACKAGE ?= ${TROUT_DEFAULT_VHAL_PACKAGES}
 
 # EVS HAL
+LOCAL_EVS_PROPERTIES ?= persist.automotive.evs.mode=1
 LOCAL_EVS_RRO_PACKAGE_OVERLAYS ?= TroutEvsOverlay
 ENABLE_EVS_SERVICE ?= true
 ENABLE_MOCK_EVSHAL ?= false
@@ -90,7 +95,7 @@ endif
 PRODUCT_COPY_FILES += $(LOCAL_EVS_PRODUCT_COPY_FILES)
 
 # A device inheriting trout can enable Vulkan support.
-TARGET_VULKAN_SUPPORT ?= false
+TARGET_VULKAN_SUPPORT ?= true
 
 PRODUCT_PROPERTY_OVERRIDES += \
     ro.hardware.type=automotive \
