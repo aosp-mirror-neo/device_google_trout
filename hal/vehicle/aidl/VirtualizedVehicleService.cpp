@@ -65,7 +65,7 @@ int main(int /* argc */, char* /* argv */[]) {
 
     constexpr auto maxConnectWaitTime = std::chrono::seconds(5);
     auto hardware = std::make_unique<GRPCVehicleHardware>(vsock->str());
-    if (const auto connected = hardware->waitForConnected(maxConnectWaitTime)) {
+    if (hardware->waitForConnected(maxConnectWaitTime)) {
         LOG(INFO) << "Connected to vsock server at " << vsock->str();
     } else {
         LOG(INFO) << "Failed to connect to vsock server at " << vsock->str()
