@@ -14,6 +14,26 @@
 # limitations under the License.
 #
 
+#
+# arm64 target for Trout
+#
+
+TARGET_BOARD_PLATFORM := vsoc_arm64
+TARGET_ARCH := arm64
+TARGET_ARCH_VARIANT := armv8-a
+TARGET_CPU_ABI := arm64-v8a
+TARGET_CPU_VARIANT := cortex-a53
+
+AUDIOSERVER_MULTILIB := first
+
+HOST_CROSS_OS := linux_bionic
+HOST_CROSS_ARCH := arm64
+HOST_CROSS_2ND_ARCH :=
+
+# Android Bluetooth stack configuration
+LOCAL_BLUETOOTH_BDROID_BUILDCFG_INCLUDE_DIR ?= device/google/trout/product_files/bluetooth
+BOARD_BLUETOOTH_BDROID_BUILDCFG_INCLUDE_DIR := $(LOCAL_BLUETOOTH_BDROID_BUILDCFG_INCLUDE_DIR)
+
 # Enable sparse on all filesystem images
 TARGET_USERIMAGES_SPARSE_EROFS_DISABLED ?= false
 TARGET_USERIMAGES_SPARSE_EXT_DISABLED ?= false
@@ -86,10 +106,6 @@ HOST_CROSS_OS := linux_bionic
 HOST_CROSS_ARCH := arm64
 HOST_CROSS_2ND_ARCH :=
 
-# Android Bluetooth stack configuration
-LOCAL_BLUETOOTH_BDROID_BUILDCFG_INCLUDE_DIR ?= device/google/trout/product_files/bluetooth
-BOARD_BLUETOOTH_BDROID_BUILDCFG_INCLUDE_DIR := $(LOCAL_BLUETOOTH_BDROID_BUILDCFG_INCLUDE_DIR)
-
 # Turn off AVB so that trout can boot
 BOARD_AVB_MAKE_VBMETA_IMAGE_ARGS += --flag 2
 BOARD_KERNEL_CMDLINE += androidboot.verifiedbootstate=orange
@@ -107,7 +123,7 @@ BOARD_KERNEL_CMDLINE += androidboot.cf_devcfg=1
 BOARD_KERNEL_CMDLINE += androidboot.cpuvulkan.version=0
 BOARD_KERNEL_CMDLINE += androidboot.hardware.gralloc=minigbm
 BOARD_KERNEL_CMDLINE += androidboot.hardware.hwcomposer=ranchu
-BOARD_KERNEL_CMDLINE += androidboot.hardware.egl=mesa
+BOARD_KERNEL_CMDLINE += androidboot.hardware.egl=emulation
 BOARD_KERNEL_CMDLINE += androidboot.hardware.hwcomposer.mode=client
 BOARD_KERNEL_CMDLINE += androidboot.hardware.hwcomposer.display_finder_mode=drm
 BOARD_KERNEL_CMDLINE += androidboot.lcd_density=160
