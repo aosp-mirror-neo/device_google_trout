@@ -18,5 +18,5 @@ PRODUCT_PACKAGES += \
     CarServiceDriverUICluster2Overlay \
     CarFrameworkDriverUICluster2Overlay
 
-PRODUCT_NAME := trout_arm64_beep
+PRODUCT_NAME := trout_arm64_ds
 PRODUCT_MODEL := arm64 trout + driverui
