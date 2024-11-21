@@ -83,21 +83,20 @@ endif
 # The list of modules strictly/only required either to reach second stage
 # init, OR for recovery. Do not use this list to workaround second stage
 # issues.
-#
-# virtio_blk.ko, virtio_console.ko, virtio_pci.ko, vmw_vsock_virtio_transport.ko
-# are already added by cuttlefish/shared/BoardConfig.mk. Adding them causes
-# duplicate definition errors with kernel 6.6 prebuilt drops since Nov 2024
-# See: b/379929054.
 RAMDISK_KERNEL_MODULES ?= \
     failover.ko \
     nd_virtio.ko \
     net_failover.ko \
+    virtio_blk.ko \
+    virtio_console.ko \
     virtio_dma_buf.ko \
     virtio-gpu.ko \
     virtio_input.ko \
     virtio_net.ko \
     virtio_mmio.ko \
+    virtio_pci.ko \
     virtio-rng.ko \
+    vmw_vsock_virtio_transport.ko \
 
 -include device/google/trout/shared/BoardConfig.mk
 
