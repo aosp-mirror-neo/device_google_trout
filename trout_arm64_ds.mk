@@ -9,14 +9,8 @@ PRODUCT_COPY_FILES += \
 # Use trout_arm64 image as base
 $(call inherit-product, vendor/google/products/trout_arm64.mk)
 
-# Enable Cluster2
-ENABLE_CLUSTER_OS_DOUBLE:=true
-
-# Include DriverUICluster2 and enable it using RROs
-PRODUCT_PACKAGES += \
-    DesignComposeDriverUIPrebuilt \
-    CarServiceDriverUICluster2Overlay \
-    CarFrameworkDriverUICluster2Overlay
+# Include DriverUI app and enable it using RROs
+$(call inherit-product, packages/services/Car/car_product/driverui/driverui_app_and_rros.mk)
 
 PRODUCT_NAME := trout_arm64_ds
 PRODUCT_MODEL := arm64 trout + driverui
