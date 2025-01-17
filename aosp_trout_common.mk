@@ -139,4 +139,7 @@ endif
 
 PRODUCT_PACKAGES += android.automotive.tracing-client.trout
 
+# Add traced_relay to product packages
+PRODUCT_PACKAGES += traced_relay
+
 BOARD_SEPOLICY_DIRS += device/google/trout/sepolicy/vendor/google
