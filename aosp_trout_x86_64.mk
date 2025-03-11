@@ -18,6 +18,7 @@ $(call inherit-product, device/google/cuttlefish/vsoc_x86_64_only/auto/aosp_cf.m
 
 # Audio HAL
 TARGET_USES_CUTTLEFISH_AUDIO ?= false
+LOCAL_USE_VENDOR_AUDIO_CONFIGURATION ?= true
 
 # Audio Control HAL
 # TODO (chenhaosjtuacm, egranata): move them to kernel command line
