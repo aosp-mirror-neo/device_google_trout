@@ -26,6 +26,7 @@ TARGET_RO_FILE_SYSTEM_TYPE := ext4
 # TODO: turn back on goldfish HAL and HFP
 TARGET_USES_CUTTLEFISH_AUDIO ?= false
 AUDIO_FEATURE_HFP_ENABLED ?= true
+LOCAL_USE_VENDOR_AUDIO_CONFIGURATION ?= true
 
 # Audio Control HAL
 # TODO (chenhaosjtuacm, egranata): move them to kernel command line
