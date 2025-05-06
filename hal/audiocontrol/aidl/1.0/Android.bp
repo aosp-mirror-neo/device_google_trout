@@ -22,7 +22,6 @@ cc_defaults {
         "hidl_defaults",
     ],
     shared_libs: [
-        "android.hardware.automotive.audiocontrol@2.0",
         "libbase",
         "libhidlbase",
         "liblog",
