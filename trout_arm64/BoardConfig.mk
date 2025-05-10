@@ -124,7 +124,6 @@ BOARD_KERNEL_CMDLINE += androidboot.cf_devcfg=1
 BOARD_KERNEL_CMDLINE += androidboot.cpuvulkan.version=0
 BOARD_KERNEL_CMDLINE += androidboot.hardware.gralloc=minigbm
 BOARD_KERNEL_CMDLINE += androidboot.hardware.hwcomposer=ranchu
-BOARD_KERNEL_CMDLINE += androidboot.hardware.egl=emulation
 BOARD_KERNEL_CMDLINE += androidboot.hardware.hwcomposer.mode=client
 BOARD_KERNEL_CMDLINE += androidboot.hardware.hwcomposer.display_finder_mode=drm
 BOARD_KERNEL_CMDLINE += androidboot.lcd_density=160
