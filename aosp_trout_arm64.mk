@@ -43,11 +43,11 @@ include device/google/trout/aosp_trout_common.mk
 
 DEVICE_MANIFEST_FILE += device/google/trout/trout_arm64/manifest.xml
 
-PRODUCT_PROPERTY_OVERRIDES += \
-	vendor.ser.bt-uart?= \
+LOCAL_BT_PROPERTIES ?= \
+    vendor.ser.bt-uart?= \
 
 PRODUCT_PACKAGES += \
-	vport_trigger \
+    vport_trigger \
 
 # Sensor HAL
 # The implementations use SCMI, which only works on arm architecture
