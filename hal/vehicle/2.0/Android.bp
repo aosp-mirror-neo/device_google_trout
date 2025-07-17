@@ -36,9 +36,6 @@ cc_library_static {
     name: "android.hardware.automotive.vehicle@2.0-grpc-trout",
     vendor: true,
     host_supported: true,
-    include_dirs: [
-        "external/protobuf/src",
-    ],
     generated_headers: [
         "DefaultVehicleHalProtoStub_h",
         "VehicleServerProtoStub_h@2.0-grpc-trout",
@@ -53,6 +50,11 @@ cc_library_static {
     ],
     shared_libs: [
         "libgrpc++_unsecure",
+        "libprotobuf-cpp-full",
+    ],
+    export_shared_lib_headers: [
+        "libgrpc++_unsecure",
+        "libprotobuf-cpp-full",
     ],
     cflags: [
         "-Wno-unused-parameter",
