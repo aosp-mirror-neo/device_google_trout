@@ -96,7 +96,6 @@ RAMDISK_KERNEL_MODULES ?= \
     virtio-gpu.ko \
     virtio_input.ko \
     virtio_net.ko \
-    virtio_mmio.ko \
     virtio-rng.ko \
 
 -include device/google/trout/shared/BoardConfig.mk
