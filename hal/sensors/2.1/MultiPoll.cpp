@@ -34,6 +34,8 @@ int MultiPoll::poll(OnPollIn in) {
         fds.assign(mDescriptors.begin(), mDescriptors.end());
     }
 
+    if (fds.empty()) return 0;
+
     int err = ::poll(&fds[0], fds.size(), mSamplingPeriodMs);
     if (err < 0) return err;
 
