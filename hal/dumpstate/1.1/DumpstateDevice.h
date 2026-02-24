@@ -15,9 +15,7 @@
  */
 #pragma once
 
-#include <aidl/android/hardware/dumpstate/BnDumpstateDevice.h>
-#include <aidl/android/hardware/dumpstate/IDumpstateDevice.h>
-#include <android/binder_status.h>
+#include <android/hardware/dumpstate/1.1/IDumpstateDevice.h>
 
 #include <filesystem>
 #include <functional>
@@ -27,22 +25,26 @@
 #include "DumpstateServer.grpc.pb.h"
 #include "DumpstateServer.pb.h"
 
-namespace aidl::android::hardware::dumpstate::implementation {
+namespace android::hardware::dumpstate::V1_1::implementation {
 
 namespace fs = std::filesystem;
 
-class DumpstateDevice : public BnDumpstateDevice {
+class DumpstateDevice : public IDumpstateDevice {
   public:
     explicit DumpstateDevice(const std::string& addr);
 
-    ::ndk::ScopedAStatus dumpstateBoard(const std::vector<::ndk::ScopedFileDescriptor>& in_fds,
-                                        IDumpstateDevice::DumpstateMode in_mode,
-                                        int64_t in_timeoutMillis) override;
+    // Methods from ::android::hardware::dumpstate::V1_0::IDumpstateDevice follow.
+    Return<void> dumpstateBoard(const hidl_handle& h) override;
 
-    ::ndk::ScopedAStatus getVerboseLoggingEnabled(bool* _aidl_return) override;
-    ::ndk::ScopedAStatus setVerboseLoggingEnabled(bool in_enable) override;
+    // Methods from ::android::hardware::dumpstate::V1_1::IDumpstateDevice follow.
+    Return<DumpstateStatus> dumpstateBoard_1_1(const hidl_handle& h, const DumpstateMode mode,
+                                               const uint64_t timeoutMillis) override;
+    Return<void> setVerboseLoggingEnabled(const bool enable) override;
+    Return<bool> getVerboseLoggingEnabled() override;
 
     bool isHealthy();
+
+    Return<void> debug(const hidl_handle& fd, const hidl_vec<hidl_string>& options);
 
   private:
     bool dumpRemoteLogs(::grpc::ClientReaderInterface<dumpstate_proto::DumpstateBuffer>* reader,
@@ -51,6 +53,8 @@ class DumpstateDevice : public BnDumpstateDevice {
 
     bool dumpHelperSystem(int textFd, int binFd);
 
+    void debugDumpServices(std::function<void(std::string)> f);
+
     std::vector<std::string> getAvailableServices();
 
     std::string mServiceAddr;
@@ -58,4 +62,6 @@ class DumpstateDevice : public BnDumpstateDevice {
     std::unique_ptr<dumpstate_proto::DumpstateServer::Stub> mGrpcStub;
 };
 
-}  // namespace aidl::android::hardware::dumpstate::implementation
+sp<DumpstateDevice> makeVirtualizationDumpstateDevice(const std::string& addr);
+
+}  // namespace android::hardware::dumpstate::V1_1::implementation
