@@ -59,12 +59,11 @@ DEVICE_VIRTWIFI_PORT ?= eth0
 PRODUCT_VENDOR_PROPERTIES += ro.vendor.disable_rename_eth0=true
 
 # Dumpstate HAL
-# TODO(b/215200137): Re-enable once converted to AIDL
-#LOCAL_DUMPSTATE_PRODUCT_PACKAGE ?= android.hardware.dumpstate@1.1-service.trout
-#LOCAL_DUMPSTATE_PROPERTIES ?= \
-#    ro.vendor.dumpstate.server.cid=2 \
-#    ro.vendor.dumpstate.server.port=9310 \
-#    ro.vendor.helpersystem.log_loc=/data/host_logs \
+LOCAL_DUMPSTATE_PRODUCT_PACKAGE ?= android.hardware.automotive.dumpstate-service.trout
+LOCAL_DUMPSTATE_PROPERTIES ?= \
+    ro.vendor.dumpstate.server.cid=2 \
+    ro.vendor.dumpstate.server.port=9310 \
+    ro.vendor.helpersystem.log_loc=/data/host_logs \
 
 # Vehicle HAL
 ENABLE_VHAL_FAKE_GRPC_SERVER ?= false
